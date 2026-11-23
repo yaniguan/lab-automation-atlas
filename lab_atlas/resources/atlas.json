@@ -1,0 +1,2208 @@
+{
+  "schema_version": "1.0.0",
+  "atlas_name": "lab-automation-atlas",
+  "last_verified": "2026-11-18",
+  "categories": [
+    {
+      "id": "autolab_sibling",
+      "title": "Related Auto-Lab repositories (`L6` to `L0`)",
+      "description": "Complete internal navigation map across the 7-layer Auto-Lab Brain/Body stack and companion organs in `@yaniguan`."
+    },
+    {
+      "id": "hardware",
+      "title": "Liquid handlers and lab robots",
+      "description": "Benchtop pipetting robots, high-throughput liquid handlers, and multi-instrument workcell orchestrators."
+    },
+    {
+      "id": "cloud_lab",
+      "title": "Cloud labs and automated foundries",
+      "description": "Remote symbolic cloud laboratories, biofoundries, and self-driving laboratory research consortia."
+    },
+    {
+      "id": "software",
+      "title": "Open-source lab automation software",
+      "description": "Hardware drivers, declarative protocol IRs, device communication standards, campaign optimizers, and schedulers (non-OSI licenses flagged explicitly)."
+    },
+    {
+      "id": "chemistry_and_procurement",
+      "title": "Chemical synthesis, reaction databases, and procurement",
+      "description": "Open reaction corpora, retrosynthesis planners, cheminformatics toolkits, vendor APIs, and ELN systems bridging `XDL`, `buy-or-make`, and `assayfold`."
+    },
+    {
+      "id": "dataset",
+      "title": "Open protocol sources and datasets",
+      "description": "Wet-lab protocol repositories and evaluation benchmarks with `assayfold`-harmonized SPDX licenses, commercial-use gates, and benchmark-contamination guards."
+    },
+    {
+      "id": "simulation_and_verification",
+      "title": "Embodied simulation and formal verification (`L4` cross-references)",
+      "description": "Pointer bridge to embodied robotics/digital-twin benchmarks in `lab-rehearsal` and formal Lean 4 / SQL verification gates in `lab-verify`."
+    }
+  ],
+  "entries": [
+    {
+      "id": "auto-lab",
+      "name": "auto-lab",
+      "category": "autolab_sibling",
+      "role": "7-layer embodied brain, default-deny safety harness, and closed-loop orchestrator hub",
+      "layer": "Hub",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/auto-lab/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/auto-lab"
+        },
+        {
+          "label": "Studio",
+          "url": "https://yaniguan.github.io/auto-lab/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-ask-why",
+      "name": "lab-ask-why",
+      "category": "autolab_sibling",
+      "role": "Socratic metacognitive co-scientist retrieving opposing scientific evidence (SUPPORT vs CONTRADICT)",
+      "layer": "L6",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-ask-why/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-ask-why"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-decide",
+      "name": "lab-decide",
+      "category": "autolab_sibling",
+      "role": "Split-conformal molecular property decision API with calibrated abstention trust regions",
+      "layer": "L6",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-decide/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-decide"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "ylm",
+      "name": "YLM",
+      "category": "autolab_sibling",
+      "role": "SE(3)-equivariant 3D molecular + language reasoner and home of formal Lean 4 LabLean",
+      "layer": "L6",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/YLM/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/YLM"
+        },
+        {
+          "label": "Studio",
+          "url": "https://yaniguan.github.io/YLM/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "buy-or-make",
+      "name": "buy-or-make",
+      "category": "autolab_sibling",
+      "role": "Make-vs-buy molecular procurement triage with conservative listed-catalog USD/g leaf lower bounds",
+      "layer": "L5",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/buy-or-make/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/buy-or-make"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "labshift",
+      "name": "labshift",
+      "category": "autolab_sibling",
+      "role": "Multi-instrument time-window lab scheduler comparing greedy vs OR-Tools CP-SAT makespan solvers",
+      "layer": "L5",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/labshift/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/labshift"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CP-SAT Schedule JSON"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-automation-atlas",
+      "name": "lab-automation-atlas",
+      "category": "autolab_sibling",
+      "role": "Machine-readable semantic map, SPDX license registry, and link auditor for automated-lab ecosystems",
+      "layer": "L5",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-automation-atlas/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-automation-atlas"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-rehearsal",
+      "name": "lab-rehearsal",
+      "category": "autolab_sibling",
+      "role": "Episodic recall and 96-well digital-twin dry-run safety gate blocking liquid-handling fault classes",
+      "layer": "L4",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-rehearsal/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-rehearsal"
+        }
+      ],
+      "supported_hardware": [
+        "Opentrons OT-2",
+        "PyLabRobot Decks"
+      ],
+      "protocol_formats": [
+        "Rehearsal Step JSON"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-verify",
+      "name": "lab-verify",
+      "category": "autolab_sibling",
+      "role": "Default-deny 4-layer SQL, Lean 4, and symbolic protocol verification gate",
+      "layer": "L4",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-verify/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-verify"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "wignerflow",
+      "name": "WignerFlow",
+      "category": "autolab_sibling",
+      "role": "50-fs integrator-free equivariant molecular dynamics and physics surrogate gate for YLM",
+      "layer": "L4",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/WignerFlow/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/WignerFlow"
+        },
+        {
+          "label": "Studio",
+          "url": "https://yaniguan.github.io/WignerFlow/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "labbench-posttrain",
+      "name": "labbench-posttrain",
+      "category": "autolab_sibling",
+      "role": "Verifiable RL post-training SDK (SFT, DPO/MPO/TROPD, PPO/GRPO/GDPO+DAPO) with anti-reward-hack gates",
+      "layer": "L3",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/labbench-posttrain/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/labbench-posttrain"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "twinstep",
+      "name": "twinstep",
+      "category": "autolab_sibling",
+      "role": "Deterministic seeded-error protocol twin generator and topological step-ordering benchmark",
+      "layer": "L3",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/twinstep/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/twinstep"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "labfill",
+      "name": "labfill",
+      "category": "autolab_sibling",
+      "role": "Batched protocol checking and sequence-packed bf16 GPU training throughput harness",
+      "layer": "L3",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/labfill/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/labfill"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-ears",
+      "name": "lab-ears",
+      "category": "autolab_sibling",
+      "role": "Wet-lab protocol span parser and benchtop acoustic machine-anomaly monitor",
+      "layer": "L2",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-ears/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-ears"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "assayfold",
+      "name": "assayfold",
+      "category": "autolab_sibling",
+      "role": "SHA-256-sealed, UCUM-normalized, SPDX-license-gated ingestion hub across 12 open lab datasets",
+      "layer": "L2",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/assayfold/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/assayfold"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "ouroboros-ocsr",
+      "name": "ouroboros-ocsr",
+      "category": "autolab_sibling",
+      "role": "SE(2)-equivariant optical chemical structure recognition bridging 2D figures to 3D conformers",
+      "layer": "L2",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/ouroboros-ocsr/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/ouroboros-ocsr"
+        },
+        {
+          "label": "Studio",
+          "url": "https://yaniguan.github.io/ouroboros-ocsr/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "stepbot",
+      "name": "stepbot",
+      "category": "autolab_sibling",
+      "role": "Deterministic YAML/JSON-to-Opentrons Python API v2 compiler with static volume/tip checks and simulator",
+      "layer": "L1",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/stepbot/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/stepbot"
+        }
+      ],
+      "supported_hardware": [
+        "Opentrons OT-2",
+        "Opentrons Flex"
+      ],
+      "protocol_formats": [
+        "Stepbot YAML/JSON",
+        "Opentrons Python API v2"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-hands",
+      "name": "lab-hands",
+      "category": "autolab_sibling",
+      "role": "Collision-free SBS 96-well RRT motion planner with path shortcutting and last-cm tactile control",
+      "layer": "L1",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-hands/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-hands"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-feet",
+      "name": "lab-feet",
+      "category": "autolab_sibling",
+      "role": "Edge knowledge distillation and int8 / packed 4-bit quantized runtime for benchtop boards",
+      "layer": "L0",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-feet/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-feet"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "equivariant-gpu-lab",
+      "name": "equivariant-gpu-lab",
+      "category": "autolab_sibling",
+      "role": "Fused GPU/CPU tensor-product and spherical-harmonic kernel benchmarks for equivariant models",
+      "layer": "L0",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/equivariant-gpu-lab/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/equivariant-gpu-lab"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "opentrons",
+      "name": "Opentrons",
+      "category": "hardware",
+      "role": "Open-source benchtop liquid-handling robots (OT-2, Flex) and modular deck peripherals",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/Opentrons/opentrons/blob/edge/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "opentrons.com",
+          "url": "https://opentrons.com/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Opentrons/opentrons"
+        }
+      ],
+      "supported_hardware": [
+        "Opentrons OT-2",
+        "Opentrons Flex"
+      ],
+      "protocol_formats": [
+        "Opentrons Python API v2",
+        "Opentrons Protocol Designer JSON"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "hamilton",
+      "name": "Hamilton",
+      "category": "hardware",
+      "role": "High-throughput automated liquid-handling workstations (Microlab STAR, Vantage, NIMBUS)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://www.hamiltoncompany.com/automated-liquid-handling",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "hamiltoncompany.com",
+          "url": "https://www.hamiltoncompany.com/automated-liquid-handling"
+        }
+      ],
+      "supported_hardware": [
+        "Hamilton STAR",
+        "Hamilton Vantage"
+      ],
+      "protocol_formats": [
+        "VENUS",
+        "SiLA 2 gRPC/Protobuf",
+        "PyLabRobot Python"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "tecan",
+      "name": "Tecan",
+      "category": "hardware",
+      "role": "Automated liquid-handling platforms and microplate workstations (Freedom EVO, Fluent, Cavro)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://www.tecan.com/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "tecan.com",
+          "url": "https://www.tecan.com/"
+        }
+      ],
+      "supported_hardware": [
+        "Tecan EVO",
+        "Tecan Fluent"
+      ],
+      "protocol_formats": [
+        "FluentControl",
+        "SiLA 2 gRPC/Protobuf",
+        "PyLabRobot Python"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "automata",
+      "name": "Automata",
+      "category": "hardware",
+      "role": "Modular benchtop lab automation workcells and robotic transport rails (LINQ)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://www.automata.tech/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "automata.tech",
+          "url": "https://www.automata.tech/"
+        }
+      ],
+      "supported_hardware": [
+        "Automata LINQ"
+      ],
+      "protocol_formats": [
+        "Automata LINQ Cloud"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "biosero",
+      "name": "Biosero",
+      "category": "hardware",
+      "role": "Vendor-neutral laboratory workcell scheduling and robotic orchestration suite (Green Button Go)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://biosero.com/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "biosero.com",
+          "url": "https://biosero.com/"
+        }
+      ],
+      "supported_hardware": [
+        "Multi-Vendor Workcells",
+        "SiLA-2 Instruments"
+      ],
+      "protocol_formats": [
+        "Green Button Go",
+        "SiLA 2 gRPC/Protobuf"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "emerald-cloud-lab",
+      "name": "Emerald Cloud Lab",
+      "category": "cloud_lab",
+      "role": "Remote symbolic cloud laboratory executing wet-lab protocols across 200+ shared instruments",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://www.emeraldcloudlab.com/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "emeraldcloudlab.com",
+          "url": "https://www.emeraldcloudlab.com/"
+        }
+      ],
+      "supported_hardware": [
+        "Emerald Cloud Lab Facility"
+      ],
+      "protocol_formats": [
+        "Symbolic Lab Language (SLL)"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "strateos",
+      "name": "Strateos",
+      "category": "cloud_lab",
+      "role": "Robotic cloud-lab pioneer behind Autoprotocol (remote cloud-lab operations restructured)",
+      "layer": null,
+      "maintenance_status": "commercial_restructured",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://strateos.com/",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "strateos.com",
+          "url": "https://strateos.com/"
+        }
+      ],
+      "supported_hardware": [
+        "Strateos Cloud Lab"
+      ],
+      "protocol_formats": [
+        "Autoprotocol JSON"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "ginkgo-bioworks",
+      "name": "Ginkgo Bioworks",
+      "category": "cloud_lab",
+      "role": "High-throughput automated cell-engineering foundry and modular Reconfigurable Automation Carts (RACs)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Proprietary",
+      "osi_approved": false,
+      "license_evidence": "https://www.ginkgobioworks.com/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "ginkgobioworks.com",
+          "url": "https://www.ginkgobioworks.com/"
+        }
+      ],
+      "supported_hardware": [
+        "Ginkgo RAC Foundry"
+      ],
+      "protocol_formats": [
+        "Proprietary Foundry Workflows"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "acceleration-consortium",
+      "name": "Acceleration Consortium (U of Toronto)",
+      "category": "cloud_lab",
+      "role": "Academic-industrial self-driving laboratories research consortium and open SDL training hub",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Custom-Check-Upstream",
+      "osi_approved": false,
+      "license_evidence": "https://acceleration.utoronto.ca/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "acceleration.utoronto.ca",
+          "url": "https://acceleration.utoronto.ca/"
+        }
+      ],
+      "supported_hardware": [
+        "Modular SDL Instruments"
+      ],
+      "protocol_formats": [
+        "Python Campaign API"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "vendor_docs_pointer_only",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "opentrons-python-api-v2",
+      "name": "Opentrons Python API v2",
+      "category": "software",
+      "role": "Python protocol execution API and bundled offline deck/pipette simulator for OT-2 and Flex",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/Opentrons/opentrons/blob/edge/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "docs",
+          "url": "https://docs.opentrons.com/v2/"
+        },
+        {
+          "label": "code",
+          "url": "https://github.com/Opentrons/opentrons"
+        },
+        {
+          "label": "PyPI",
+          "url": "https://pypi.org/project/opentrons/"
+        }
+      ],
+      "supported_hardware": [
+        "Opentrons OT-2",
+        "Opentrons Flex"
+      ],
+      "protocol_formats": [
+        "Opentrons Python API v2"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "pylabrobot",
+      "name": "PyLabRobot",
+      "category": "software",
+      "role": "Hardware-agnostic pure-Python driver and browser visualizer for Hamilton, Tecan, and Opentrons",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/PyLabRobot/pylabrobot/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/PyLabRobot/pylabrobot"
+        }
+      ],
+      "supported_hardware": [
+        "Hamilton STAR",
+        "Hamilton Vantage",
+        "Tecan EVO",
+        "Opentrons OT-2"
+      ],
+      "protocol_formats": [
+        "PyLabRobot Python"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "autoprotocol",
+      "name": "Autoprotocol",
+      "category": "software",
+      "role": "Declarative JSON standard for liquid-handling and incubation operations with Python generator SDK",
+      "layer": null,
+      "maintenance_status": "legacy",
+      "spdx_license": "LicenseRef-Autoprotocol-Custom",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/autoprotocol/autoprotocol-python",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/autoprotocol/autoprotocol-python"
+        }
+      ],
+      "supported_hardware": [
+        "Strateos Cloud Lab"
+      ],
+      "protocol_formats": [
+        "Autoprotocol JSON"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "labop",
+      "name": "LabOP",
+      "category": "software",
+      "role": "Open RDF/UML laboratory protocol representation from the Bioprotocols Working Group",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/Bioprotocols/labop/blob/main/LICENSE.txt",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Bioprotocols/labop"
+        },
+        {
+          "label": "site",
+          "url": "https://www.bioprotocols.org/"
+        }
+      ],
+      "supported_hardware": [
+        "Opentrons OT-2",
+        "Strateos Cloud Lab"
+      ],
+      "protocol_formats": [
+        "LabOP RDF/JSON",
+        "Autoprotocol JSON",
+        "Opentrons Python API v2"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "sila-2",
+      "name": "SiLA 2",
+      "category": "software",
+      "role": "Open gRPC/Protobuf microservice standard for laboratory instrument discovery and control",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://gitlab.com/SiLA2/sila_python/-/blob/master/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "sila-standard.com",
+          "url": "https://sila-standard.com/"
+        },
+        {
+          "label": "sila_python",
+          "url": "https://gitlab.com/SiLA2/sila_python"
+        }
+      ],
+      "supported_hardware": [
+        "Hamilton STAR",
+        "Tecan Fluent",
+        "SiLA-2 Instruments"
+      ],
+      "protocol_formats": [
+        "SiLA 2 gRPC/Protobuf"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "aquarium",
+      "name": "Aquarium",
+      "category": "software",
+      "role": "Human-in-the-loop laboratory workflow, sample inventory, and technician execution LIMS (Krill DSL)",
+      "layer": null,
+      "maintenance_status": "archived",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/aquariumbio/aquarium/blob/master/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/aquariumbio/aquarium"
+        }
+      ],
+      "supported_hardware": [
+        "Technician Benchtop Workflows"
+      ],
+      "protocol_formats": [
+        "Krill Ruby DSL"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "xdl-chemputer",
+      "name": "XDL (Chemputer)",
+      "category": "software",
+      "role": "Executable XML/JSON chemical synthesis description language for modular batch/flow reactors",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Custom-Check-Upstream",
+      "osi_approved": false,
+      "license_evidence": "https://croningroup.gitlab.io/chemputer/xdl/",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "docs",
+          "url": "https://croningroup.gitlab.io/chemputer/xdl/"
+        },
+        {
+          "label": "group",
+          "url": "https://www.chem.gla.ac.uk/cronin/"
+        }
+      ],
+      "supported_hardware": [
+        "Chemputer Modular Synthesis"
+      ],
+      "protocol_formats": [
+        "XDL XML/JSON"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "xdl-generation",
+      "name": "XDL generation",
+      "category": "software",
+      "role": "Rule- and NLP-based compiler translating prose organic synthesis procedures into XDL (no OSI license file)",
+      "layer": null,
+      "maintenance_status": "legacy",
+      "spdx_license": "NOASSERTION",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/ac-rad/xdl-generation",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/ac-rad/xdl-generation"
+        }
+      ],
+      "supported_hardware": [
+        "Chemputer Modular Synthesis"
+      ],
+      "protocol_formats": [
+        "XDL XML/JSON"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "atlas-bo",
+      "name": "Atlas",
+      "category": "software",
+      "role": "Bayesian optimization planner for mixed continuous/categorical/molecular self-driving lab campaigns",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/aspuru-guzik-group/atlas/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/aspuru-guzik-group/atlas"
+        }
+      ],
+      "supported_hardware": [
+        "Modular SDL Instruments"
+      ],
+      "protocol_formats": [
+        "Python Campaign API"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "wei",
+      "name": "WEI",
+      "category": "software",
+      "role": "Argonne autonomous-lab workflow execution engine coordinating ROS2 arms and benchtop instruments",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/AD-SDL/wei/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/AD-SDL/wei"
+        }
+      ],
+      "supported_hardware": [
+        "Opentrons OT-2",
+        "ROS2 Workcells",
+        "Modular SDL Instruments"
+      ],
+      "protocol_formats": [
+        "WEI YAML Workflow"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "bluesky",
+      "name": "Bluesky",
+      "category": "software",
+      "role": "Event-driven Python experiment orchestration engine (RunEngine + Ophyd) for instruments and beamlines",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "BSD-3-Clause",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/bluesky/bluesky/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bluesky/bluesky"
+        }
+      ],
+      "supported_hardware": [
+        "EPICS Beamlines",
+        "Modular SDL Instruments"
+      ],
+      "protocol_formats": [
+        "Bluesky RunEngine Plans"
+      ],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "or-tools",
+      "name": "OR-Tools",
+      "category": "software",
+      "role": "Combinatorial optimization suite including the CP-SAT constraint solver used in labshift scheduling",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/google/or-tools/blob/stable/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/google/or-tools"
+        },
+        {
+          "label": "docs",
+          "url": "https://developers.google.com/optimization"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CP-SAT Model"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "open-reaction-database",
+      "name": "Open Reaction Database (ORD)",
+      "category": "chemistry_and_procurement",
+      "role": "Open schema and curated repository of structured organic reaction conditions, workups, and yields (indexed in assayfold and buy-or-make)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-SA-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/open-reaction-database/ord-data",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://open-reaction-database.org/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/open-reaction-database/ord-schema"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/open-reaction-database/ord-data"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "ORD Protobuf/JSON"
+      ],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only",
+        "tool_integration"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": "open-reaction-database/ord-data",
+      "doi": null,
+      "tasks": [
+        "reaction_prediction",
+        "condition_recommendation",
+        "yield_modeling"
+      ],
+      "record_count": "2M+ structured organic reactions",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "uspto-lowe",
+      "name": "USPTO Reactions (Lowe)",
+      "category": "chemistry_and_procurement",
+      "role": "Public-domain chemical reactions extracted from US patents (1976-2016) bridging XDL synthesis and buy-or-make route lookup",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC0-1.0",
+      "osi_approved": false,
+      "license_evidence": "https://doi.org/10.6084/m9.figshare.5104873.v1",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "DOI",
+          "url": "https://doi.org/10.6084/m9.figshare.5104873.v1"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "Reaction SMILES",
+        "CML"
+      ],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.6084/m9.figshare.5104873.v1",
+      "tasks": [
+        "retrosynthesis",
+        "forward_prediction",
+        "procedure_extraction"
+      ],
+      "record_count": "1.8M+ patent chemical reactions (grants + applications)",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "aizynthfinder",
+      "name": "AiZynthFinder",
+      "category": "chemistry_and_procurement",
+      "role": "Monte Carlo tree search retrosynthetic route planner backing multi-step makeability checks in buy-or-make",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/MolecularAI/aizynthfinder/blob/master/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/MolecularAI/aizynthfinder"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "Reaction Tree JSON",
+        "SMILES"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [
+        "retrosynthesis",
+        "stock_triage"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "rdkit",
+      "name": "RDKit",
+      "category": "chemistry_and_procurement",
+      "role": "Open-source cheminformatics, SMILES/InChIKey canonicalization, and SMARTS reaction engine across Auto-Lab",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "BSD-3-Clause",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/rdkit/rdkit/blob/master/license.txt",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://www.rdkit.org/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/rdkit/rdkit"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "SMILES",
+        "InChI",
+        "SMARTS",
+        "SDF"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "pubchem-pug-rest",
+      "name": "PubChem PUG REST",
+      "category": "chemistry_and_procurement",
+      "role": "NCBI programmatic chemical structure, safety GHS, and commercial vendor directory API queried by buy-or-make (<= 5 req/s)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC0-1.0",
+      "osi_approved": false,
+      "license_evidence": "https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "docs",
+          "url": "https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "PUG REST JSON/XML"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration",
+        "rag_pointer_only"
+      ],
+      "scraping_policy": "public_api_rate_limited",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "elabftw",
+      "name": "eLabFTW",
+      "category": "chemistry_and_procurement",
+      "role": "Open-source electronic lab notebook (ELN) and chemical/sample inventory manager with OpenAPI REST interface",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "AGPL-3.0-only",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/elabftw/elabftw/blob/master/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://www.elabftw.net/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/elabftw/elabftw"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "eLabFTW JSON/RO-Crate"
+      ],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration"
+      ],
+      "scraping_policy": "public_api_rate_limited",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "protocols-io",
+      "name": "protocols.io",
+      "category": "dataset",
+      "role": "Open repository of community wet-lab protocols with versioned DOIs and rate-limited REST API",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://www.protocols.io/terms",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://www.protocols.io/"
+        },
+        {
+          "label": "API",
+          "url": "https://www.protocols.io/developers"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "protocols.io JSON"
+      ],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "rag_pointer_only",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "public_api_rate_limited",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [
+        "protocol_retrieval",
+        "step_parsing"
+      ],
+      "record_count": "Public open-access protocol collection via REST API v3/v4",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "bio-protocol",
+      "name": "Bio-protocol",
+      "category": "dataset",
+      "role": "Peer-reviewed life-science protocol journal; individual articles carry per-article copyright terms",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-Per-Article",
+      "osi_approved": false,
+      "license_evidence": "https://bio-protocol.org/",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "bio-protocol.org",
+          "url": "https://bio-protocol.org/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "rag_pointer_only"
+      ],
+      "scraping_policy": "no_bulk_scraping_per_article",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [
+        "literature_reference"
+      ],
+      "record_count": "4,500+ peer-reviewed protocol articles (no bulk scraping)",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "wlp",
+      "name": "Wet Lab Protocols (WLP)",
+      "category": "dataset",
+      "role": "Fine-grained span and action-graph annotated wet-lab protocol corpus used in assayfold and lab-ears",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/chaitanya2334/WLP-Dataset/blob/master/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/chaitanya2334/WLP-Dataset"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [
+        "ner",
+        "relation_extraction",
+        "action_graph"
+      ],
+      "record_count": "622 annotated protocols",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "bioplanner",
+      "name": "BioPlanner (BioProt)",
+      "category": "dataset",
+      "role": "Automatic evaluation benchmark for translating biology protocol goals into structured pseudocode functions",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "NOASSERTION",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/bioplanner/bioplanner",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2310.10632"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/bioplanner/bioplanner"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Held-out planning benchmark; exclude evaluation splits from L3 post-training.",
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2310.10632",
+      "tasks": [
+        "planning",
+        "next_step_prediction",
+        "pseudocode_generation"
+      ],
+      "record_count": "100 curated evaluation protocols (BioProt)",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "bioprobench",
+      "name": "BioProBench",
+      "category": "dataset",
+      "role": "Multi-task biological protocol benchmark aligned with assayfold (`CC-BY-NC-4.0`, non-commercial)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-NC-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/YuyangSunshine/bioprobench",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2505.07889"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/YuyangSunshine/bioprobench"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/BioProBench/BioProBench"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Non-commercial held-out benchmark; never ingest into commercial pipelines or L3 training.",
+      "huggingface_id": "BioProBench/BioProBench",
+      "doi": "10.48550/arXiv.2505.07889",
+      "tasks": [
+        "qa",
+        "ordering",
+        "error_detection",
+        "generation"
+      ],
+      "record_count": "4,333 test items (PQA 1,200; ORD 1,161; ERR 1,200; GEN 772)",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lab-bench",
+      "name": "LAB-Bench",
+      "category": "dataset",
+      "role": "FutureHouse biology research evaluation suite including ProtocolQA, LitQA2, DbQA, and CloningScenarios",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-SA-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://huggingface.co/datasets/futurehouse/lab-bench",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2407.10362"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Future-House/LAB-Bench"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/futurehouse/lab-bench"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Contains benchmark canary strings; strictly eval_only — never train on LAB-Bench splits.",
+      "huggingface_id": "futurehouse/lab-bench",
+      "doi": "10.48550/arXiv.2407.10362",
+      "tasks": [
+        "qa",
+        "protocol_qa",
+        "lit_qa",
+        "db_qa",
+        "seq_qa"
+      ],
+      "record_count": "1,967 rows across 8 subsets (108 ProtocolQA)",
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "labutopia",
+      "name": "LabUtopia",
+      "category": "simulation_and_verification",
+      "role": "High-fidelity Isaac-based lab scenes and hierarchical embodied agent benchmark (curated in L4 lab-rehearsal)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/Rui-li023/LabUtopia/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2505.22634"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Rui-li023/LabUtopia"
+        },
+        {
+          "label": "lab-rehearsal",
+          "url": "https://github.com/yaniguan/lab-rehearsal"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "eval_only",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2505.22634",
+      "tasks": [
+        "embodied_manipulation",
+        "hierarchical_planning"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "autobio",
+      "name": "AutoBio",
+      "category": "simulation_and_verification",
+      "role": "MuJoCo biology lab manipulation simulation for pipetting, centrifuges, and thermal cyclers (curated in L4 lab-rehearsal)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "NOASSERTION",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/autobio-bench/AutoBio",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2505.14030"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/autobio-bench/AutoBio"
+        },
+        {
+          "label": "lab-rehearsal",
+          "url": "https://github.com/yaniguan/lab-rehearsal"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2505.14030",
+      "tasks": [
+        "pipetting_sim",
+        "instrument_manipulation"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "matterix",
+      "name": "MATTERIX",
+      "category": "simulation_and_verification",
+      "role": "Multiscale digital twin combining robotic manipulation, liquid/powder handling, and reaction kinetics (curated in L4 lab-rehearsal)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://arxiv.org/abs/2601.13232",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2601.13232"
+        },
+        {
+          "label": "lab-rehearsal",
+          "url": "https://github.com/yaniguan/lab-rehearsal"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": true,
+      "allowed_purposes": [
+        "tool_integration",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2601.13232",
+      "tasks": [
+        "digital_twin",
+        "chemistry_simulation"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "lean4-minif2f",
+      "name": "Lean 4 & miniF2F",
+      "category": "simulation_and_verification",
+      "role": "Interactive theorem prover kernel and formal benchmark backing L4 lab-verify and L6 YLM LabLean proofs",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/leanprover/lean4/blob/master/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "Lean 4",
+          "url": "https://github.com/leanprover/lean4"
+        },
+        {
+          "label": "miniF2F",
+          "url": "https://github.com/facebookresearch/miniF2F"
+        },
+        {
+          "label": "lab-verify",
+          "url": "https://github.com/yaniguan/lab-verify"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "tool_integration",
+        "eval_only",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2109.00110",
+      "tasks": [
+        "formal_verification",
+        "theorem_proving"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    },
+    {
+      "id": "spider-2",
+      "name": "Spider 2.0",
+      "category": "simulation_and_verification",
+      "role": "Enterprise database-grounded text-to-SQL benchmark cross-indexed with L4 lab-verify 4-layer SQL gate",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/xlang-ai/Spider2/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://spider2-sql.github.io/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/xlang-ai/Spider2"
+        },
+        {
+          "label": "lab-verify",
+          "url": "https://github.com/yaniguan/lab-verify"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": false,
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Held-out SQL benchmark cross-referenced with lab-verify.",
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2411.07763",
+      "tasks": [
+        "text_to_sql",
+        "execution_verification"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-18"
+    }
+  ]
+}

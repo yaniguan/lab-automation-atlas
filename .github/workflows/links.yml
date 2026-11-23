@@ -1,14 +1,49 @@
 name: links
+
 on:
   push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
   schedule:
     - cron: "0 12 * * 1"
+
+permissions:
+  contents: read
+
 jobs:
-  check:
+  unit-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python scripts/check_links.py
+      - name: Install package and test dependencies
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      - name: Verify catalog schema and README table sync
+        run: python scripts/sync_catalog.py --check
+      - name: Run offline unit tests and offline link audit
+        run: |
+          pytest -q
+          python scripts/check_links.py --offline
+          lab-atlas list --category software --commercial-ok --json > /dev/null
+
+  check:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check external and local links
+        run: python scripts/check_links.py --json-out reports/link_status.json
+      - name: Upload link status JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-status-report
+          path: reports/link_status.json
