@@ -1,0 +1,6 @@
+name = "lab-atlas-lean"
+version = "0.1.0"
+defaultTargets = ["LabAtlasLean"]
+
+[[lean_lib]]
+name = "LabAtlasLean"
