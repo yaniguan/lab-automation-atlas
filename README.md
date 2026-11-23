@@ -3,8 +3,35 @@
 A short, high-level map of automated-lab platforms, lab automation software, and open protocol datasets.
 Every link below was opened and checked on 2026-11-18.
 
+> **Auto-Lab Ecosystem**: Layer `L5 · Executive Planning, Procurement & Scheduling` in [auto-lab](https://github.com/yaniguan/auto-lab) · [Project Studio](https://yaniguan.github.io/auto-lab/)
+
 This is a pointer list only. It does not copy data, rank vendors, or claim any partnership.
 Check each project's own license before you use it.
+
+## System Profile: Object · Data · Model · Training · History · Unique Properties
+
+Full architectural documentation, catalog taxonomy, commit history, and sibling-repository contracts are maintained in [`docs/ARCHITECTURE_AND_HISTORY.md`](docs/ARCHITECTURE_AND_HISTORY.md):
+
+- **Object**: Curated semantic world map and ontology pointer registry (`L5`) grounding hardware platform, protocol IR, scheduling solver, and dataset selection across the Auto-Lab stack.
+- **Data**: 5 structured domain tables (`30` cataloged platforms, tools, and corpora) verified on `2026-11-18` under a strict zero-copy, zero-redistribution policy with per-dataset license warnings (`MIT`, `CC-BY-SA-4.0`, non-commercial `BioProBench`, per-record `protocols.io`).
+- **Model**: Five-faceted lab-automation taxonomy coupled with a standard-library regex + HTTP status link auditor (`scripts/check_links.py`); **no neural network or statistical model is trained inside this pointer-atlas repo**.
+- **Training**: Zero parametric training; maintained via scheduled weekly GitHub Actions link-rot checks (`.github/workflows/links.yml`, Mondays 12:00 UTC).
+- **History**: Initialized in `f2e2e83` (`2026-11-18`) with the verified 5-category ecosystem map, link-check script, and weekly CI workflow.
+- **Unique Properties**: Vendor-neutral zero-copy pointer architecture spanning physical liquid handlers (`Opentrons`, `Hamilton`, `Tecan`), cloud foundries, open protocol IRs/SDKs (`PyLabRobot`, `Autoprotocol`, `LabOP`, `XDL`, `SiLA 2`, `OR-Tools`), and benchmarks, directly cross-linked with `twinstep`, `labshift`, `stepbot`, and `assayfold`.
+
+## Repository Layout
+
+```text
+lab-automation-atlas/
+├── .github/workflows/
+│   └── links.yml                         # Weekly cron + push CI link-health check
+├── docs/
+│   └── ARCHITECTURE_AND_HISTORY.md       # Deep technical profile (Object, Data, Model, History)
+├── scripts/
+│   └── check_links.py                    # Standard-library Markdown URL reachability checker
+├── LICENSE                               # MIT License
+└── README.md                             # Curated 5-category lab automation pointer atlas
+```
 
 ## Related tools in this account
 
