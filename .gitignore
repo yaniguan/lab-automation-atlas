@@ -1,3 +1,26 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
 *.egg-info/
+.eggs/
+
+# Unit test / linter / type-checker caches
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local link-audit and scratch outputs
+/reports/
+/data/

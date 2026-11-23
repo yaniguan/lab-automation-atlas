@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lab-automation-atlas"
+version = "0.2.0"
+description = "Machine-readable semantic map, SPDX license registry, and link auditor for automated-lab hardware, protocol IRs, and open datasets."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Yani Guan" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "jsonschema>=4.20",
+]
+
+[project.scripts]
+lab-atlas = "lab_atlas.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["lab_atlas*"]
+
+[tool.setuptools.package-data]
+lab_atlas = ["resources/*.json"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

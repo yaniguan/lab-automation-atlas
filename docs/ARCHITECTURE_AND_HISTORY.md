@@ -7,62 +7,57 @@
 ## 1. Object
 
 ### Problem Statement
-Laboratory automation spans fragmented hardware vendors, cloud foundries, protocol intermediate representations (`Opentrons Python API v2`, `PyLabRobot`, `Autoprotocol`, `LabOP`, `XDL`, `SiLA 2`), orchestration engines (`WEI`, `Bluesky`, `Atlas`, `OR-Tools`), and open protocol corpora (`protocols.io`, `Bio-protocol`, `WLP`, `BioPlanner`, `BioProBench`, `LAB-Bench`), each governed by distinct licensing and terms-of-use constraints. Without a verified, neutral ecosystem registry, executive planning agents risk hallucinating dead endpoints, selecting incompatible protocol compilers for target liquid handlers, or ingesting non-commercial benchmark corpora into commercial pipelines.
+Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilton`, `Tecan`, `Automata`, `Biosero`), cloud foundries (`Emerald Cloud Lab`, `Strateos`, `Ginkgo Bioworks`), intermediate representations and SDKs (`Opentrons Python API v2`, `PyLabRobot`, `Autoprotocol`, `LabOP`, `XDL`, `SiLA 2`), campaign/scheduling solvers (`Atlas`, `WEI`, `Bluesky`, `OR-Tools`), chemical synthesis/procurement databases (`ORD`, `USPTO`, `AiZynthFinder`, `RDKit`, `PubChem PUG REST`, `eLabFTW`), and protocol benchmarks (`WLP`, `BioPlanner`, `BioProBench`, `LAB-Bench`). Without a machine-readable registry carrying verified SPDX licenses, maintenance statuses, hardware compatibility, and benchmark-contamination flags, autonomous planning agents risk selecting archived/incompatible stacks or leaking `eval_only` benchmarks into training pipelines.
 
-`lab-automation-atlas` serves as the **curated, zero-copy semantic world map and pointer registry** of automated-lab platforms, open-source automation software, and open protocol datasets, backed by automated URL reachability checks (`scripts/check_links.py` and `.github/workflows/links.yml`).
+`lab-automation-atlas` is the **machine-readable semantic world map, SPDX license registry, and automated link auditor** for Layer `L5` of Auto-Lab.
 
 ### Role in the Auto-Lab `L0`–`L6` Hierarchy
-Within the [Auto-Lab](https://github.com/yaniguan/auto-lab) Brain/Body architecture (`L0`–`L6`), `lab-automation-atlas` sits in **`L5 · Executive Planning, Procurement & Scheduling`**:
-- **Tool & Target Selection (`L5`)**: Grounds platform, compiler, solver, and benchmark discovery for sibling `L5` planning and scheduling packages—explicitly cross-referencing [`labshift`](https://github.com/yaniguan/labshift) (`OR-Tools` CP-SAT multi-instrument scheduling), [`buy-or-make`](https://github.com/yaniguan/buy-or-make) (retrosynthetic & vendor procurement triage), and [`lab-decide`](https://github.com/yaniguan/lab-decide) (Bayesian optimization & conformal trust regions, complementary to `Atlas`).
-- **Compiler & Verification Grounding (`L4` / `L2`)**: Maps the hardware-to-software boundary connecting [`stepbot`](https://github.com/yaniguan/stepbot) (`Opentrons Python API v2`), [`twinstep`](https://github.com/yaniguan/twinstep) (seeded protocol error twins), and [`lab-rehearsal`](https://github.com/yaniguan/lab-rehearsal) (`PyLabRobot` / `Opentrons` deck simulation).
-- **Data Hub Alignment (`L0`)**: Indexes upstream protocol repositories (`protocols.io`, `WLP`, `BioProBench`, `LAB-Bench`) whose license-gated ingestion and unified schema conversion are implemented in [`assayfold`](https://github.com/yaniguan/assayfold).
-
-### Inputs, Outputs, and Scope Boundaries
-- **Inputs**:
-  - Curated Markdown catalog tables in `README.md` (checked on `2026-11-18`).
-- **Outputs**:
-  - Human- and agent-readable domain taxonomy across 5 structured tables (`30` named tools, platforms, and datasets; `39` unique external HTTPS URLs in the initial catalog).
-  - HTTP status audit log from `python scripts/check_links.py` (`<code> <url>` per link plus summary `<N> links, <M> not reachable`).
-- **Scope Boundaries**:
-  - Strictly a **pointer registry**: copies zero external datasets, ranks zero commercial vendors, claims zero partnerships, and delegates license enforcement to downstream data pipelines (`assayfold`, `buy-or-make`).
+- **Executive Planning & Procurement (`L5`)**: Supplies typed JSON/YAML queries (`lab-atlas list`, `lab-atlas compatibility`) to [`labshift`](https://github.com/yaniguan/labshift), [`buy-or-make`](https://github.com/yaniguan/buy-or-make), and [`lab-decide`](https://github.com/yaniguan/lab-decide).
+- **Simulation & Default-Deny Verification (`L4`)**: Cross-indexes embodied robotics twins (`LabUtopia`, `AutoBio`, `MATTERIX`) in [`lab-rehearsal`](https://github.com/yaniguan/lab-rehearsal) and formal Lean 4 / SQL benchmarks (`Lean 4`, `miniF2F`, `Spider 2.0`) in [`lab-verify`](https://github.com/yaniguan/lab-verify).
+- **Motor & Compiler Grounding (`L1` / `L3`)**: Maps target liquid handlers to open SDKs/simulators consumed by [`stepbot`](https://github.com/yaniguan/stepbot) and [`twinstep`](https://github.com/yaniguan/twinstep).
+- **License-Gated Data Hub Alignment (`L2`)**: Harmonizes dataset SPDX expressions, `commercial_use_ok`, and `allowed_purposes` (`train_commercial` vs `eval_only`) with [`assayfold`](https://github.com/yaniguan/assayfold) and [`labbench-posttrain`](https://github.com/yaniguan/labbench-posttrain).
 
 ---
 
 ## 2. Data
 
-### Curated Catalog Structure (`README.md`)
-All entries were manually opened and verified on `2026-11-18` across five domain tables:
+### Canonical Catalog (`atlas.json` & `schema/atlas.schema.json`)
+All `58` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
 
-| Section | Entries | Representative Targets | Metadata Columns |
-|---|---:|---|---|
-| **Related tools in this account** | 3 | `twinstep`, `labshift`, `stepbot` | `Repo`, `What it does` |
-| **Liquid handlers and lab robots** | 5 | `Opentrons` (OT-2, Flex), `Hamilton`, `Tecan`, `Automata`, `Biosero` | `Name`, `Type`, `Link` |
-| **Cloud labs and automated foundries** | 4 | `Emerald Cloud Lab`, `Strateos`, `Ginkgo Bioworks`, `Acceleration Consortium` | `Name`, `Type`, `Link` |
-| **Open-source lab automation software** | 12 | `Opentrons Python API v2`, `PyLabRobot`, `Autoprotocol`, `LabOP`, `SiLA 2`, `Aquarium`, `XDL (Chemputer)`, `XDL generation`, `Atlas`, `WEI`, `Bluesky`, `OR-Tools` | `Name`, `What it is`, `Link` |
-| **Open protocol sources and datasets** | 6 | `protocols.io`, `Bio-protocol`, `Wet Lab Protocols (WLP)`, `BioPlanner (BioProt)`, `BioProBench`, `LAB-Bench` | `Name`, `What it is`, `License note`, `Link` |
-
-### Provenance and Zero-Copy License Posture
-- **Zero Data Redistribution**: No third-party protocol text, benchmark splits, or vendor manuals are stored in this repository.
-- **License Annotations**: The repository text itself is `MIT`-licensed (`LICENSE`). Protocol dataset entries carry explicit license warnings—highlighting per-item terms (`protocols.io`, `Bio-protocol`), permissive/ShareAlike repos (`WLP` MIT, `LAB-Bench` CC-BY-SA-4.0), and non-commercial restrictions (`BioProBench` non-commercial).
+| Category ID | Section Title | Entries | Key Governance Fields |
+|---|---|---:|---|
+| `autolab_sibling` | Related Auto-Lab repositories (`L6` to `L0`) | 20 | `layer` (`Hub`, `L6`..`L0`), `spdx_license` (`MIT`), `has_simulator` |
+| `hardware` | Liquid handlers and lab robots | 5 | `supported_hardware`, `protocol_formats`, `has_simulator` |
+| `cloud_lab` | Cloud labs and automated foundries | 4 | `maintenance_status` (`Strateos` flagged `commercial_restructured`) |
+| `software` | Open-source lab automation software | 12 | `spdx_license`, `osi_approved` (non-OSI flagged), `maintenance_status` (`Aquarium` `archived`, `Autoprotocol` & `XDL generation` `legacy`) |
+| `chemistry_and_procurement` | Chemical synthesis, reaction databases, and procurement | 6 | `ORD`, `USPTO`, `AiZynthFinder`, `RDKit`, `PubChem PUG REST`, `eLabFTW` |
+| `dataset` | Open protocol sources and datasets | 6 | `spdx_license`, `commercial_use_ok`, `allowed_purposes`, `contamination_warning`, `huggingface_id`, `doi`, `record_count` |
+| `simulation_and_verification` | Embodied simulation & formal verification (`L4` cross-refs) | 5 | Cross-references to `lab-rehearsal` and `lab-verify` |
 
 ---
 
 ## 3. Model
 
-**No neural network, statistical estimator, or learned model is trained or executed inside this pointer-atlas repository.** Instead, `lab-automation-atlas` implements two lightweight deterministic representations:
+**No neural network or statistical estimator is trained in this repository.** Instead, `lab_atlas` provides three deterministic subsystems:
 
-1. **Five-Faceted Lab-Automation Ontology (`README.md`)**:
-   - Partitions the automated laboratory stack into: *(i)* local Auto-Lab companion tools, *(ii)* physical benchtop liquid handlers & orchestrators, *(iii)* remote cloud labs & self-driving foundries, *(iv)* open-source protocol/driver/scheduling software (`IR`s, hardware SDKs, workflow engines, combinatorial solvers), and *(v)* open wet-lab protocol corpora & QA benchmarks.
-2. **Regex + HTTP Link-Health Verifier (`scripts/check_links.py`)**:
-   - Extracts unique Markdown hyperlink targets via `re.findall(r"\]\((https?://[^)]+)\)", ...)`.
-   - Issues sequential HTTP requests (`urllib.request.Request(..., headers={"User-Agent": "Mozilla/5.0"})`, `timeout=20`) and classifies each URL as reachable when `code in {200, 403}` (accounting for vendor WAFs that return `403` to scripted `urllib` clients while serving normal browser fetches).
+1. **Strict Schema Validator & Query Engine (`lab_atlas/catalog.py`)**:
+   - Enforces `additionalProperties: false`, unique slugs, HTTPS-only URLs, enum invariants, and `eval_only` contamination warnings using only the Python standard library.
+   - Computes the hardware-to-SDK-to-IR compatibility matrix (`build_compatibility_matrix`) and exports deterministic JSON/YAML.
+2. **Synchronized Markdown Table Renderer (`lab_atlas/render.py`)**:
+   - Generates uniform 6-column Markdown tables (`Name | Role / Type | Status | License | Commercial Use | Links`) across all 7 catalog categories plus the hardware compatibility table.
+3. **SSRF-Hardened Concurrent Link Auditor (`lab_atlas/linkcheck.py`, `scripts/check_links.py`)**:
+   - **Balanced Markdown Parser**: Strips fenced/inline code spans and parses inline links with nested balanced parentheses and optional link titles, reference-style definitions, `<https://...>` autolinks, and local file `#anchor` targets across `README.md` and `docs/**/*.md`.
+   - **SSRF & Redirect Safety (`SafeRedirectHandler`)**: Rejects non-HTTPS schemes, `https -> http` downgrades, credentials, `localhost`/`.local` hostnames, and private/loopback/link-local/reserved IPs (both literal and DNS-resolved).
+   - **Protocol & WAF Resilience**: Issues `HEAD` requests with `GET` fallback (`Range: bytes=0-16383`) on `400`/`403`/`405`/`501`, bounded exponential backoff on `429`/`502`/`503`/`504`, `ThreadPoolExecutor` concurrency with per-host semaphores, soft-404/root-redirect detection, and an explicit commercial-vendor-only WAF `403` allowlist.
 
 ---
 
-## 4. Training
+## 4. Training & Verification
 
-- **Zero Training / Zero Parameters**: Contains no trainable weights, optimization loops, or external Python package dependencies (uses Python 3.12 standard library `re`, `sys`, `urllib.request`).
-- **Scheduled Link-Rot Monitoring (`.github/workflows/links.yml`)**: Maintained continuously via a GitHub Actions workflow triggered on `push` and on a weekly cron schedule (`0 12 * * 1`, Mondays at 12:00 UTC) running `python scripts/check_links.py` on `ubuntu-latest`.
+- **Zero Parametric Training**: Pure Python 3.10+ standard library runtime (`dependencies = []` in [`pyproject.toml`](../pyproject.toml)).
+- **Continuous Verification (`.github/workflows/links.yml`)**:
+  - Runs offline `pytest` unit tests and `python scripts/sync_catalog.py --check` on every `push`, `pull_request`, and `workflow_dispatch`.
+  - Runs live concurrent link checks (`timeout-minutes: 10`, `permissions: contents: read`) on `push`, `pull_request`, `workflow_dispatch`, and weekly Mondays (`0 12 * * 1`), uploading `reports/link_status.json` as a workflow artifact and failing CI (`exit 1`) on broken links.
 
 ---
 
@@ -70,14 +65,13 @@ All entries were manually opened and verified on `2026-11-18` across five domain
 
 | Commit | Date | Author | Branch / Ref | Summary |
 |---|---|---|---|---|
-| `f2e2e83` (`f2e2e83c0003e3ffd2376112ac05196b66c6285d`) | `2026-11-18` | Yani Guan | `main` | Initial commit (`Initial version`): published the 5-section curated map of liquid-handling robots, cloud labs, open-source lab automation software, and open protocol datasets (`README.md`, verified `2026-11-18`), along with `scripts/check_links.py`, weekly link-check CI (`.github/workflows/links.yml`), and `MIT` license. |
+| `f2e2e83` | `2026-11-18` | Yani Guan | `main` | Initial commit: 5-section Markdown pointer map (`30` entries), sequential `scripts/check_links.py`, weekly `links.yml`, and `MIT` license. |
+| `0.2.0` | `2026-11-23` | Yani Guan | `fix/resolve-audit-issues` | Resolved audit issues `#1..#22`: published 58-entry `atlas.json` + Draft 2020-12 `schema/atlas.schema.json`, packaged `lab-atlas` CLI, added SPDX/OSI/commercial/contamination metadata, hardware-to-SDK-to-IR compatibility matrix, chemistry & `L4` cross-references, SSRF-safe concurrent balanced-paren link checker with JSON reporting, hardened CI, and offline `pytest` suite. |
 
 ---
 
 ## 6. Unique Properties
 
-1. **Strict Zero-Copy, Vendor-Neutral Pointer Architecture**: Separates ecosystem discovery from data storage—providing verified entry points without redistributing third-party datasets, ranking commercial hardware vendors, or implying commercial endorsement.
-2. **End-to-End Coverage of Hardware, Protocol IRs, Solvers, and Benchmarks**: Bridges physical actuation (`Opentrons`, `Hamilton`, `Tecan`), intermediate representations (`Autoprotocol`, `LabOP`, `XDL`, `SiLA 2`), scheduling/optimization (`OR-Tools`, `Atlas`, `WEI`, `Bluesky`), and protocol benchmarks (`WLP`, `BioPlanner`, `BioProBench`, `LAB-Bench`) in one concise reference.
-3. **Automated Weekly Link Auditing**: Pairs manual initial verification (`2026-11-18`) with scheduled weekly CI sweeps (`.github/workflows/links.yml`) using zero third-party dependencies.
-4. **Auto-Lab Sibling Contracts**:
-   - Directly indexes [`twinstep`](https://github.com/yaniguan/twinstep), [`labshift`](https://github.com/yaniguan/labshift), and [`stepbot`](https://github.com/yaniguan/stepbot), and complements [`assayfold`](https://github.com/yaniguan/assayfold) (which operationalizes `WLP`, `BioProBench`, `LAB-Bench`, and `protocols.io` into license-gated unified JSONL/Parquet records) and [`buy-or-make`](https://github.com/yaniguan/buy-or-make) (which maps the chemical vendor and retrosynthesis ecosystem).
+1. **Single Source of Truth (`atlas.json` <-> `README.md`)**: Eliminates drift between programmatic JSON/YAML agent queries and human-readable Markdown tables.
+2. **SPDX & Benchmark-Contamination Hygiene**: Aligns dataset licensing directly with `assayfold` while explicitly guarding `LAB-Bench`, `BioProBench`, and `BioPlanner` against training contamination.
+3. **Zero-Dependency, Security-Hardened Link Auditing**: Combines balanced-parenthesis Markdown parsing, local heading-anchor verification, SSRF/downgrade redirect blocking, per-host concurrency limits, and explicit WAF `403` allowlisting in pure standard-library Python.

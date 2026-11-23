@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/yaniguan/lab-automation-atlas/schema/atlas.schema.json",
+  "title": "LabAutomationAtlasCatalog",
+  "description": "Strict machine-readable catalog schema for lab-automation-atlas (Auto-Lab Layer L5).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "atlas_name",
+    "last_verified",
+    "categories",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "atlas_name": {
+      "type": "string",
+      "const": "lab-automation-atlas"
+    },
+    "last_verified": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "description"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "autolab_sibling",
+              "hardware",
+              "cloud_lab",
+              "software",
+              "chemistry_and_procurement",
+              "dataset",
+              "simulation_and_verification"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10
+          }
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 30,
+      "items": {
+        "$ref": "#/$defs/AtlasEntry"
+      }
+    }
+  },
+  "$defs": {
+    "LinkItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "url"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https://[^\\s]+$"
+        }
+      }
+    },
+    "AtlasEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "category",
+        "role",
+        "layer",
+        "maintenance_status",
+        "spdx_license",
+        "osi_approved",
+        "license_evidence",
+        "commercial_use_ok",
+        "links",
+        "supported_hardware",
+        "protocol_formats",
+        "has_simulator",
+        "allowed_purposes",
+        "scraping_policy",
+        "contamination_warning",
+        "huggingface_id",
+        "doi",
+        "tasks",
+        "record_count",
+        "last_checked"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "autolab_sibling",
+            "hardware",
+            "cloud_lab",
+            "software",
+            "chemistry_and_procurement",
+            "dataset",
+            "simulation_and_verification"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "minLength": 5
+        },
+        "layer": {
+          "type": ["string", "null"],
+          "enum": ["Hub", "L0", "L1", "L2", "L3", "L4", "L5", "L6", null]
+        },
+        "maintenance_status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "maintenance",
+            "legacy",
+            "archived",
+            "commercial_restructured"
+          ]
+        },
+        "spdx_license": {
+          "type": "string",
+          "minLength": 2
+        },
+        "osi_approved": {
+          "type": "boolean"
+        },
+        "license_evidence": {
+          "type": "string",
+          "pattern": "^https://[^\\s]+$"
+        },
+        "commercial_use_ok": {
+          "type": "boolean"
+        },
+        "links": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/LinkItem"
+          }
+        },
+        "supported_hardware": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "protocol_formats": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "has_simulator": {
+          "type": ["boolean", "null"]
+        },
+        "allowed_purposes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "train_commercial",
+              "train_academic",
+              "eval_only",
+              "rag_pointer_only",
+              "tool_integration"
+            ]
+          }
+        },
+        "scraping_policy": {
+          "type": "string",
+          "enum": [
+            "git_or_hf_download",
+            "public_api_rate_limited",
+            "no_bulk_scraping_per_article",
+            "vendor_docs_pointer_only"
+          ]
+        },
+        "contamination_warning": {
+          "type": ["string", "null"]
+        },
+        "huggingface_id": {
+          "type": ["string", "null"]
+        },
+        "doi": {
+          "type": ["string", "null"]
+        },
+        "tasks": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "record_count": {
+          "type": ["string", "null"]
+        },
+        "last_checked": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    }
+  }
+}
