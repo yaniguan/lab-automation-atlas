@@ -17,10 +17,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize ephemeral zero-dependency Lake manifest
+        run: |
+          printf '%s\n' '{"version": "1.3.0", "packagesDir": ".lake/packages", "packages": [], "name": "\u00ablab-atlas-lean\u00bb", "lakeDir": ".lake", "fixedToolchain": false}' > lean/lake-manifest.json
       - name: Verify LabAtlasLean formal proofs (0 sorry, 0 warnings)
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: "lean"
+          use-mathlib-cache: false
 
   unit-tests:
     runs-on: ubuntu-latest
