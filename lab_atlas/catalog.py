@@ -7,6 +7,9 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .linkcheck import SecurityValidationError, validate_url_target
+from .spdx import evaluate_spdx_expression, spdx_satisfies_filter
+
 PACKAGE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = PACKAGE_DIR.parent
 RESOURCE_DIR = PACKAGE_DIR / "resources"
@@ -41,8 +44,31 @@ ALLOWED_SCRAPING_POLICIES = (
     "no_bulk_scraping_per_article",
     "vendor_docs_pointer_only",
 )
+ALLOWED_MODALITIES = (
+    "XRD",
+    "Raman",
+    "NMR",
+    "LC-MS",
+    "GC-MS",
+    "UV-Vis",
+    "FTIR",
+    "fluorescence_plate_reader",
+    "optical_imaging",
+    "acoustic_monitoring",
+    "SAXS_WAXS",
+)
+ALLOWED_DECK_ARCHITECTURES = (
+    "sbs_fixed_slots",
+    "sbs_coordinate_grid",
+    "carrier_rails",
+    "modular_workcell",
+    "flow_batch_reactor",
+    "cloud_symbolic_facility",
+    "beamline_station",
+)
 
 _ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+_PLATFORM_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_]*$")
 _DATE_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 _HTTPS_RE = re.compile(r"^https://[^\s]+$")
 
@@ -73,6 +99,40 @@ _ENTRY_KEYS = {
     "record_count",
     "last_checked",
 }
+_OPTIONAL_ENTRY_KEYS = {"hardware_capabilities", "analytical_modalities"}
+_ALL_ENTRY_KEYS = _ENTRY_KEYS | _OPTIONAL_ENTRY_KEYS
+
+_HW_CAP_REQUIRED_KEYS = {"api_level", "max_deck_slots", "min_volume_ul"}
+_HW_CAP_ALLOWED_KEYS = {
+    "platform_id",
+    "deck_architecture",
+    "api_level",
+    "max_deck_slots",
+    "staging_slots",
+    "min_volume_ul",
+    "max_volume_ul",
+    "dead_volume_floor_ul",
+    "min_temp_c",
+    "max_temp_c",
+    "high_temp_seal_threshold_c",
+    "profiles",
+}
+_HW_PROFILE_KEYS = {
+    "platform_id",
+    "instrument_model",
+    "deck_architecture",
+    "api_level",
+    "max_deck_slots",
+    "staging_slots",
+    "min_volume_ul",
+    "max_volume_ul",
+    "dead_volume_floor_ul",
+    "min_temp_c",
+    "max_temp_c",
+    "high_temp_seal_threshold_c",
+}
+
+_CATALOG_CACHE: dict[Path, tuple[int, dict[str, Any]]] = {}
 
 
 def resolve_catalog_path(path: str | Path | None = None) -> Path:
@@ -112,6 +172,18 @@ def load_catalog(path: str | Path | None = None, *, validate: bool = True) -> di
     return data
 
 
+def load_catalog_cached(path: str | Path | None = None) -> dict[str, Any]:
+    """Load and validate atlas.json with `(resolved_path, st_mtime_ns)` caching."""
+    resolved = resolve_catalog_path(path)
+    mtime_ns = resolved.stat().st_mtime_ns
+    cached = _CATALOG_CACHE.get(resolved)
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    data = load_catalog(resolved, validate=True)
+    _CATALOG_CACHE[resolved] = (mtime_ns, data)
+    return data
+
+
 def load_schema(path: str | Path | None = None) -> dict[str, Any]:
     """Load the JSON Schema definition for atlas.json."""
     resolved = resolve_schema_path(path)
@@ -122,12 +194,109 @@ def _is_bool(val: Any) -> bool:
     return isinstance(val, bool)
 
 
+def _is_int(val: Any) -> bool:
+    return isinstance(val, int) and not isinstance(val, bool)
+
+
+def _is_num(val: Any) -> bool:
+    return isinstance(val, (int, float)) and not isinstance(val, bool)
+
+
 def _is_nonempty_str(val: Any, min_len: int = 1) -> bool:
     return isinstance(val, str) and len(val.strip()) >= min_len
 
 
+def _is_valid_https_url(val: Any) -> bool:
+    if not isinstance(val, str) or not _HTTPS_RE.match(val):
+        return False
+    try:
+        validate_url_target(val, require_https=True, resolve_dns=False)
+    except SecurityValidationError:
+        return False
+    return True
+
+
+def _validate_hw_envelope_bounds(
+    obj: dict[str, Any],
+    prefix: str,
+    *,
+    strict_non_null: bool,
+    errors: list[str],
+) -> None:
+    if "platform_id" in obj and obj["platform_id"] is not None:
+        pid = obj["platform_id"]
+        if not isinstance(pid, str) or not _PLATFORM_ID_RE.match(pid):
+            errors.append(f"{prefix}.platform_id invalid slug: {pid!r}")
+
+    if "instrument_model" in obj:
+        if not _is_nonempty_str(obj["instrument_model"], 1):
+            errors.append(f"{prefix}.instrument_model must be non-empty string.")
+
+    if "deck_architecture" in obj and obj["deck_architecture"] is not None:
+        if obj["deck_architecture"] not in ALLOWED_DECK_ARCHITECTURES:
+            errors.append(f"{prefix}.deck_architecture invalid: {obj['deck_architecture']!r}")
+
+    api_level = obj.get("api_level")
+    if api_level is not None and not _is_nonempty_str(api_level, 1):
+        errors.append(f"{prefix}.api_level must be non-empty string or null.")
+
+    slots = obj.get("max_deck_slots")
+    if slots is not None and (not _is_int(slots) or slots < 1):
+        errors.append(f"{prefix}.max_deck_slots must be integer >= 1 or null.")
+
+    if "staging_slots" in obj:
+        st_slots = obj["staging_slots"]
+        if not _is_int(st_slots) or st_slots < 0:
+            errors.append(f"{prefix}.staging_slots must be integer >= 0.")
+
+    min_v = obj.get("min_volume_ul")
+    max_v = obj.get("max_volume_ul")
+    dead_v = obj.get("dead_volume_floor_ul")
+    min_t = obj.get("min_temp_c")
+    max_t = obj.get("max_temp_c")
+    seal_t = obj.get("high_temp_seal_threshold_c")
+
+    if strict_non_null:
+        for req_num in (
+            "min_volume_ul",
+            "max_volume_ul",
+            "dead_volume_floor_ul",
+            "min_temp_c",
+            "max_temp_c",
+            "high_temp_seal_threshold_c",
+        ):
+            if not _is_num(obj.get(req_num)):
+                errors.append(f"{prefix}.{req_num} must be a number.")
+
+    if min_v is not None:
+        if not _is_num(min_v) or float(min_v) <= 0.0:
+            errors.append(f"{prefix}.min_volume_ul must be > 0.")
+    if max_v is not None:
+        if not _is_num(max_v) or float(max_v) <= 0.0:
+            errors.append(f"{prefix}.max_volume_ul must be > 0.")
+    if _is_num(min_v) and _is_num(max_v) and float(min_v) > float(max_v):
+        errors.append(f"{prefix} inverted volume bounds: min_volume_ul > max_volume_ul.")
+
+    if dead_v is not None and (not _is_num(dead_v) or float(dead_v) < 0.0):
+        errors.append(f"{prefix}.dead_volume_floor_ul must be >= 0.")
+
+    if min_t is not None and (not _is_num(min_t) or float(min_t) < -200.0):
+        errors.append(f"{prefix}.min_temp_c must be >= -200.0 C.")
+    if max_t is not None and (not _is_num(max_t) or float(max_t) > 500.0):
+        errors.append(f"{prefix}.max_temp_c must be <= 500.0 C.")
+    if _is_num(min_t) and _is_num(max_t) and float(min_t) > float(max_t):
+        errors.append(f"{prefix} inverted thermal bounds: min_temp_c > max_temp_c.")
+    if seal_t is not None:
+        if not _is_num(seal_t) or float(seal_t) < -200.0:
+            errors.append(f"{prefix}.high_temp_seal_threshold_c must be >= -200.0 C.")
+        elif _is_num(min_t) and float(seal_t) < float(min_t):
+            errors.append(
+                f"{prefix}.high_temp_seal_threshold_c must be >= min_temp_c."
+            )
+
+
 def validate_catalog(catalog: dict[str, Any]) -> list[str]:
-    """Validate catalog structure, enums, HTTPS URLs, and uniqueness with zero third-party deps."""
+    """Validate catalog structure, SPDX expressions, capabilities, HTTPS URLs, and uniqueness."""
     errors: list[str] = []
     if not isinstance(catalog, dict):
         return ["Root catalog must be a JSON object."]
@@ -179,13 +348,15 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
         return errors
 
     seen_ids: set[str] = set()
+    seen_profile_ids: set[str] = set()
+
     for idx, entry in enumerate(entries):
         prefix = f"entries[{idx}]"
         if not isinstance(entry, dict):
             errors.append(f"{prefix} must be an object.")
             continue
         miss = _ENTRY_KEYS - set(entry.keys())
-        extra = set(entry.keys()) - _ENTRY_KEYS
+        extra = set(entry.keys()) - _ALL_ENTRY_KEYS
         if miss:
             errors.append(f"{prefix} missing required keys: {sorted(miss)}")
             continue
@@ -212,12 +383,24 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
             errors.append(f"{prefix}.layer invalid: {entry['layer']!r}")
         if entry["maintenance_status"] not in ALLOWED_STATUSES:
             errors.append(f"{prefix}.maintenance_status invalid: {entry['maintenance_status']!r}")
+
         if not _is_nonempty_str(entry["spdx_license"], 2):
             errors.append(f"{prefix}.spdx_license must be >= 2 chars.")
+        else:
+            spdx_eval = evaluate_spdx_expression(
+                entry["spdx_license"],
+                allow_policy_aliases=False,
+                require_uppercase_operators=True,
+            )
+            if not spdx_eval.spdx_known:
+                errors.append(
+                    f"{prefix}.spdx_license invalid or unrecognized SPDX expression: {entry['spdx_license']!r}"
+                )
+
         if not _is_bool(entry["osi_approved"]):
             errors.append(f"{prefix}.osi_approved must be boolean.")
-        if not isinstance(entry["license_evidence"], str) or not _HTTPS_RE.match(entry["license_evidence"]):
-            errors.append(f"{prefix}.license_evidence must be an https:// URL.")
+        if not _is_valid_https_url(entry["license_evidence"]):
+            errors.append(f"{prefix}.license_evidence must be a safe public https:// URL.")
         if not _is_bool(entry["commercial_use_ok"]):
             errors.append(f"{prefix}.commercial_use_ok must be boolean.")
 
@@ -231,8 +414,10 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
                     continue
                 if not _is_nonempty_str(link["label"], 1):
                     errors.append(f"{prefix}.links[{lidx}].label must be non-empty.")
-                if not isinstance(link["url"], str) or not _HTTPS_RE.match(link["url"]):
-                    errors.append(f"{prefix}.links[{lidx}].url must be an https:// URL, got {link['url']!r}.")
+                if not _is_valid_https_url(link["url"]):
+                    errors.append(
+                        f"{prefix}.links[{lidx}].url must be a safe public https:// URL, got {link['url']!r}."
+                    )
 
         for list_field in ("supported_hardware", "protocol_formats", "tasks"):
             val = entry[list_field]
@@ -241,6 +426,67 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
 
         if entry["has_simulator"] is not None and not _is_bool(entry["has_simulator"]):
             errors.append(f"{prefix}.has_simulator must be boolean or null.")
+
+        if "hardware_capabilities" in entry and entry["hardware_capabilities"] is not None:
+            hw_cap = entry["hardware_capabilities"]
+            if not isinstance(hw_cap, dict):
+                errors.append(f"{prefix}.hardware_capabilities must be an object or null.")
+            else:
+                miss_hw = _HW_CAP_REQUIRED_KEYS - set(hw_cap.keys())
+                extra_hw = set(hw_cap.keys()) - _HW_CAP_ALLOWED_KEYS
+                if miss_hw:
+                    errors.append(f"{prefix}.hardware_capabilities missing required keys: {sorted(miss_hw)}")
+                if extra_hw:
+                    errors.append(
+                        f"{prefix}.hardware_capabilities has unexpected keys (additionalProperties=false): {sorted(extra_hw)}"
+                    )
+                _validate_hw_envelope_bounds(
+                    hw_cap,
+                    f"{prefix}.hardware_capabilities",
+                    strict_non_null=False,
+                    errors=errors,
+                )
+                if "profiles" in hw_cap:
+                    profs = hw_cap["profiles"]
+                    if not isinstance(profs, list) or len(profs) < 1:
+                        errors.append(f"{prefix}.hardware_capabilities.profiles must be a non-empty list.")
+                    else:
+                        for pidx, prof in enumerate(profs):
+                            p_prefix = f"{prefix}.hardware_capabilities.profiles[{pidx}]"
+                            if not isinstance(prof, dict):
+                                errors.append(f"{p_prefix} must be an object.")
+                                continue
+                            pmiss = _HW_PROFILE_KEYS - set(prof.keys())
+                            pextra = set(prof.keys()) - _HW_PROFILE_KEYS
+                            if pmiss or pextra:
+                                errors.append(
+                                    f"{p_prefix} invalid keys (missing={sorted(pmiss)}, extra={sorted(pextra)})."
+                                )
+                                continue
+                            _validate_hw_envelope_bounds(
+                                prof,
+                                p_prefix,
+                                strict_non_null=True,
+                                errors=errors,
+                            )
+                            pid = prof["platform_id"]
+                            if isinstance(pid, str) and pid in seen_profile_ids:
+                                errors.append(f"Duplicate hardware profile platform_id: {pid!r}")
+                            elif isinstance(pid, str):
+                                seen_profile_ids.add(pid)
+
+        if "analytical_modalities" in entry:
+            mods = entry["analytical_modalities"]
+            if not isinstance(mods, list):
+                errors.append(f"{prefix}.analytical_modalities must be a list.")
+            else:
+                if len(mods) != len(set(mods)):
+                    errors.append(f"{prefix}.analytical_modalities must not contain duplicates.")
+                for mod in mods:
+                    if mod not in ALLOWED_MODALITIES:
+                        errors.append(
+                            f"{prefix}.analytical_modalities invalid modality {mod!r} (allowed={ALLOWED_MODALITIES})."
+                        )
 
         purposes = entry["allowed_purposes"]
         if not isinstance(purposes, list) or len(purposes) < 1 or any(p not in ALLOWED_PURPOSES for p in purposes):
@@ -257,12 +503,38 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
         if not isinstance(entry["last_checked"], str) or not _DATE_RE.match(entry["last_checked"]):
             errors.append(f"{prefix}.last_checked invalid date: {entry['last_checked']!r}")
 
-        # Policy invariant: held-out evaluation benchmarks in dataset category must declare contamination_warning
-        if entry["category"] == "dataset" and entry["allowed_purposes"] == ["eval_only"]:
+        # Policy invariant: held-out evaluation benchmarks across ALL categories must declare contamination_warning
+        if entry["allowed_purposes"] == ["eval_only"]:
             if not entry["contamination_warning"]:
-                errors.append(f"{prefix} is eval_only dataset but lacks contamination_warning.")
+                errors.append(f"{prefix} is eval_only but lacks contamination_warning.")
 
     return errors
+
+
+def _entry_volume_satisfies(
+    entry: dict[str, Any],
+    *,
+    min_volume_at_most: float | None,
+    max_volume_at_least: float | None,
+) -> bool:
+    hw_cap = entry.get("hardware_capabilities")
+    if not isinstance(hw_cap, dict):
+        return False
+    candidates: list[dict[str, Any]] = [hw_cap]
+    if isinstance(hw_cap.get("profiles"), list):
+        candidates.extend(p for p in hw_cap["profiles"] if isinstance(p, dict))
+
+    for cand in candidates:
+        c_min = cand.get("min_volume_ul")
+        c_max = cand.get("max_volume_ul")
+        if min_volume_at_most is not None:
+            if not _is_num(c_min) or float(c_min) > min_volume_at_most:
+                continue
+        if max_volume_at_least is not None:
+            if not _is_num(c_max) or float(c_max) < max_volume_at_least:
+                continue
+        return True
+    return False
 
 
 def filter_entries(
@@ -278,21 +550,24 @@ def filter_entries(
     protocol_format: str | None = None,
     allowed_purpose: str | None = None,
     has_simulator: bool | None = None,
+    modality: str | None = None,
+    min_volume_at_most: float | None = None,
+    max_volume_at_least: float | None = None,
     query: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Filter catalog entries across structured L5 planning and governance dimensions."""
+    """Filter catalog entries across structured L5 planning, capability, and governance dimensions."""
     result: list[dict[str, Any]] = []
     q_norm = query.strip().lower() if query else None
     hw_norm = hardware.strip().lower() if hardware else None
     fmt_norm = protocol_format.strip().lower() if protocol_format else None
-    lic_norm = spdx_license.strip().lower() if spdx_license else None
+    mod_norm = modality.strip().lower() if modality else None
 
     for entry in entries:
         if category is not None and entry["category"] != category:
             continue
         if layer is not None and (entry["layer"] or "").upper() != layer.upper():
             continue
-        if lic_norm is not None and lic_norm not in entry["spdx_license"].lower():
+        if spdx_license is not None and not spdx_satisfies_filter(entry["spdx_license"], spdx_license):
             continue
         if commercial_ok is not None and entry["commercial_use_ok"] is not commercial_ok:
             continue
@@ -310,6 +585,17 @@ def filter_entries(
             continue
         if has_simulator is not None and entry["has_simulator"] is not has_simulator:
             continue
+        if mod_norm is not None:
+            entry_mods = entry.get("analytical_modalities") or []
+            if not any(m.lower() == mod_norm for m in entry_mods):
+                continue
+        if min_volume_at_most is not None or max_volume_at_least is not None:
+            if not _entry_volume_satisfies(
+                entry,
+                min_volume_at_most=min_volume_at_most,
+                max_volume_at_least=max_volume_at_least,
+            ):
+                continue
         if q_norm is not None:
             haystack = " ".join(
                 [
@@ -320,6 +606,7 @@ def filter_entries(
                     " ".join(entry["supported_hardware"]),
                     " ".join(entry["protocol_formats"]),
                     " ".join(entry["tasks"]),
+                    " ".join(entry.get("analytical_modalities") or []),
                 ]
             ).lower()
             if q_norm not in haystack:
@@ -345,11 +632,15 @@ def build_compatibility_matrix(catalog: dict[str, Any]) -> list[dict[str, Any]]:
         irs: list[str] = []
         simulators: list[str] = []
         autolab_links: list[str] = []
+        modalities: list[str] = []
         for entry in entries:
-            if entry["category"] not in ("software", "autolab_sibling", "cloud_lab"):
-                continue
             hw_joined = " ".join(entry["supported_hardware"]).lower()
             if not any(kw in hw_joined for kw in keywords):
+                continue
+            for mod in entry.get("analytical_modalities") or []:
+                if mod not in modalities:
+                    modalities.append(mod)
+            if entry["category"] not in ("software", "autolab_sibling", "cloud_lab"):
                 continue
             if entry["category"] == "autolab_sibling":
                 autolab_links.append(entry["name"])
@@ -367,6 +658,7 @@ def build_compatibility_matrix(catalog: dict[str, Any]) -> list[dict[str, Any]]:
                 "protocol_irs": irs,
                 "offline_simulators": simulators,
                 "autolab_integrations": autolab_links,
+                "analytical_modalities": modalities,
             }
         )
     return rows

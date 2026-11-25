@@ -12,6 +12,16 @@ permissions:
   contents: read
 
 jobs:
+  lean-proofs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify LabAtlasLean formal proofs (0 sorry, 0 warnings)
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: "lean"
+
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5

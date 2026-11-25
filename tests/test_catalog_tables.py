@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 import jsonschema
+import pytest
 
 from lab_atlas.catalog import (
     REPO_ROOT,
@@ -113,6 +114,7 @@ def test_complete_autolab_sibling_suite_and_layers() -> None:
         "lab-automation-atlas": "L5",
         "lab-rehearsal": "L4",
         "lab-verify": "L4",
+        "lab-attrib": "L4",
         "WignerFlow": "L4",
         "labbench-posttrain": "L3",
         "twinstep": "L3",
@@ -174,3 +176,74 @@ def test_workflow_and_gitignore_hygiene() -> None:
     gi = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
     for pattern in (".venv/", "venv/", "*.py[cod]", "build/", "dist/", ".ruff_cache/", "/reports/"):
         assert pattern in gi
+
+
+def test_issue_25_spdx_ast_filter_and_cross_category_eval_only_warning() -> None:
+    """Issue #25: Verify compound SPDX filtering and cross-category eval_only contamination_warning check."""
+    from lab_atlas.catalog import filter_entries
+    from lab_atlas.spdx import SpdxParseError, parse_spdx_expression
+
+    catalog = load_catalog()
+    by_id = {e["id"]: e for e in catalog["entries"]}
+    assert by_id["autobio"]["allowed_purposes"] == ["eval_only"]
+    assert by_id["autobio"]["contamination_warning"]
+
+    # Removing contamination_warning on simulation_and_verification eval_only entry must fail validation
+    mutated = copy.deepcopy(catalog)
+    autobio_mut = next(e for e in mutated["entries"] if e["id"] == "autobio")
+    autobio_mut["contamination_warning"] = None
+    errs = validate_catalog(mutated)
+    assert any("autobio" in e and "contamination_warning" in e for e in errs)
+
+    # Compound SPDX filter: `--license MIT` must reject NC-tainted `MIT AND CC-BY-NC-4.0` while keeping `MIT OR CC-BY-NC-4.0`
+    synthetic = [
+        dict(by_id["wlp"], id="pure-mit", spdx_license="MIT"),
+        dict(by_id["wlp"], id="dual-mit-or-nc", spdx_license="MIT OR CC-BY-NC-4.0"),
+        dict(by_id["wlp"], id="conj-mit-and-bsd", spdx_license="MIT AND BSD-3-Clause"),
+        dict(by_id["wlp"], id="tainted-mit-and-nc", spdx_license="MIT AND CC-BY-NC-4.0"),
+    ]
+    matched_mit = {e["id"] for e in filter_entries(synthetic, spdx_license="MIT")}
+    assert matched_mit == {"pure-mit", "dual-mit-or-nc", "conj-mit-and-bsd"}
+
+    with pytest.raises(SpdxParseError):
+        parse_spdx_expression("(MIT OR Apache-2.0")
+
+
+def test_issue_28_hardware_capabilities_and_analytical_modalities_schema_invariants() -> None:
+    """Issue #28: Verify hardware_capabilities bounds, analytical_modalities enum, and closed schema."""
+    import pytest as _pytest
+
+    from lab_atlas.catalog import filter_entries
+
+    _ = _pytest
+    catalog = load_catalog()
+    schema = load_schema()
+    validator = jsonschema.Draft202012Validator(schema)
+
+    by_id = {e["id"]: e for e in catalog["entries"]}
+    assert by_id["opentrons"]["hardware_capabilities"]["api_level"] == "2.16"
+    assert by_id["opentrons"]["hardware_capabilities"]["max_deck_slots"] == 11
+    assert by_id["opentrons"]["hardware_capabilities"]["min_volume_ul"] == 1.0
+    assert "XRD" in by_id["lab-attrib"]["analytical_modalities"]
+    assert "Raman" in by_id["emerald-cloud-lab"]["analytical_modalities"]
+    assert "SAXS_WAXS" in by_id["bluesky"]["analytical_modalities"]
+
+    raman_ids = {e["id"] for e in filter_entries(catalog["entries"], modality="Raman")}
+    assert {"lab-attrib", "emerald-cloud-lab", "bluesky", "acceleration-consortium"} <= raman_ids
+
+    sub_ul_ids = {e["id"] for e in filter_entries(catalog["entries"], min_volume_at_most=0.5)}
+    assert {"hamilton", "tecan", "automata", "emerald-cloud-lab"} <= sub_ul_ids
+
+    # Inverted volume bounds fail validate_catalog
+    bad_vol = copy.deepcopy(catalog)
+    ot = next(e for e in bad_vol["entries"] if e["id"] == "opentrons")
+    ot["hardware_capabilities"]["min_volume_ul"] = 5000.0
+    ot["hardware_capabilities"]["max_volume_ul"] = 10.0
+    assert any("inverted volume bounds" in err for err in validate_catalog(bad_vol))
+
+    # Unknown extra key inside hardware_capabilities fails both Draft202012Validator and validate_catalog
+    bad_extra = copy.deepcopy(catalog)
+    ot2 = next(e for e in bad_extra["entries"] if e["id"] == "opentrons")
+    ot2["hardware_capabilities"]["undeclared_field"] = 42
+    assert validate_catalog(bad_extra)
+    assert list(validator.iter_errors(bad_extra))

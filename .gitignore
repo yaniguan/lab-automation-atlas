@@ -21,6 +21,7 @@ dist/
 .coverage
 htmlcov/
 
-# Local link-audit and scratch outputs
+# Local link-audit, Lean build, and scratch outputs
 /reports/
 /data/
+lean/.lake/

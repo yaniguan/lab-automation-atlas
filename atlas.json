@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "atlas_name": "lab-automation-atlas",
-  "last_verified": "2026-11-18",
+  "last_verified": "2026-11-24",
   "categories": [
     {
       "id": "autolab_sibling",
@@ -353,6 +353,47 @@
       "last_checked": "2026-11-18"
     },
     {
+      "id": "lab-attrib",
+      "name": "lab-attrib",
+      "category": "autolab_sibling",
+      "role": "Post-execution causal blame gate, NNLS XRD precursor deconvolution, EVOI orthogonal routing, and SHA-256 certified memory ledger",
+      "layer": "L4",
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/yaniguan/lab-attrib/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/yaniguan/lab-attrib"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [],
+      "record_count": null,
+      "last_checked": "2026-11-23",
+      "analytical_modalities": [
+        "XRD",
+        "Raman",
+        "NMR",
+        "LC-MS",
+        "UV-Vis",
+        "FTIR"
+      ]
+    },
+    {
       "id": "wignerflow",
       "name": "WignerFlow",
       "category": "autolab_sibling",
@@ -519,7 +560,10 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "analytical_modalities": [
+        "acoustic_monitoring"
+      ]
     },
     {
       "id": "assayfold",
@@ -589,7 +633,10 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "analytical_modalities": [
+        "optical_imaging"
+      ]
     },
     {
       "id": "stepbot",
@@ -628,7 +675,19 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "deck_architecture": "sbs_fixed_slots",
+        "api_level": "2.16",
+        "max_deck_slots": 11,
+        "staging_slots": 0,
+        "min_volume_ul": 1.0,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 10.0,
+        "min_temp_c": 4.0,
+        "max_temp_c": 99.0,
+        "high_temp_seal_threshold_c": 80.0
+      }
     },
     {
       "id": "lab-hands",
@@ -768,7 +827,54 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "opentrons_ot2",
+        "deck_architecture": "sbs_fixed_slots",
+        "api_level": "2.16",
+        "max_deck_slots": 11,
+        "staging_slots": 0,
+        "min_volume_ul": 1.0,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 10.0,
+        "min_temp_c": 4.0,
+        "max_temp_c": 99.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "opentrons_ot2",
+            "instrument_model": "Opentrons OT-2",
+            "deck_architecture": "sbs_fixed_slots",
+            "api_level": "2.16",
+            "max_deck_slots": 11,
+            "staging_slots": 0,
+            "min_volume_ul": 1.0,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 10.0,
+            "min_temp_c": 4.0,
+            "max_temp_c": 95.0,
+            "high_temp_seal_threshold_c": 80.0
+          },
+          {
+            "platform_id": "opentrons_flex",
+            "instrument_model": "Opentrons Flex",
+            "deck_architecture": "sbs_coordinate_grid",
+            "api_level": "2.20",
+            "max_deck_slots": 12,
+            "staging_slots": 4,
+            "min_volume_ul": 1.0,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 5.0,
+            "min_temp_c": 4.0,
+            "max_temp_c": 99.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "UV-Vis",
+        "fluorescence_plate_reader"
+      ]
     },
     {
       "id": "hamilton",
@@ -806,7 +912,50 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "hamilton_star",
+        "deck_architecture": "carrier_rails",
+        "api_level": "VENUS-6",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 0.5,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 15.0,
+        "min_temp_c": 4.0,
+        "max_temp_c": 98.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "hamilton_star",
+            "instrument_model": "Hamilton Microlab STAR 1000uL Core",
+            "deck_architecture": "carrier_rails",
+            "api_level": "VENUS-6",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 1.0,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 15.0,
+            "min_temp_c": 4.0,
+            "max_temp_c": 98.0,
+            "high_temp_seal_threshold_c": 80.0
+          },
+          {
+            "platform_id": "hamilton_vantage",
+            "instrument_model": "Hamilton Microlab Vantage",
+            "deck_architecture": "carrier_rails",
+            "api_level": "INSTINCT-V",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 0.5,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 12.0,
+            "min_temp_c": 4.0,
+            "max_temp_c": 98.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      }
     },
     {
       "id": "tecan",
@@ -844,7 +993,54 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "tecan_fluent",
+        "deck_architecture": "carrier_rails",
+        "api_level": "FluentControl-3.5",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 0.5,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 15.0,
+        "min_temp_c": 4.0,
+        "max_temp_c": 98.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "tecan_fluent",
+            "instrument_model": "Tecan Fluent",
+            "deck_architecture": "carrier_rails",
+            "api_level": "FluentControl-3.5",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 0.5,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 15.0,
+            "min_temp_c": 4.0,
+            "max_temp_c": 98.0,
+            "high_temp_seal_threshold_c": 80.0
+          },
+          {
+            "platform_id": "tecan_evo",
+            "instrument_model": "Tecan Freedom EVO",
+            "deck_architecture": "carrier_rails",
+            "api_level": "EVOware-2.8",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 1.0,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 20.0,
+            "min_temp_c": 4.0,
+            "max_temp_c": 98.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "UV-Vis",
+        "fluorescence_plate_reader"
+      ]
     },
     {
       "id": "automata",
@@ -879,7 +1075,41 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "automata_linq",
+        "deck_architecture": "modular_workcell",
+        "api_level": "LINQ-2.0",
+        "max_deck_slots": 18,
+        "staging_slots": 6,
+        "min_volume_ul": 0.5,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 10.0,
+        "min_temp_c": -20.0,
+        "max_temp_c": 99.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "automata_linq",
+            "instrument_model": "Automata LINQ Benchtop Workcell",
+            "deck_architecture": "modular_workcell",
+            "api_level": "LINQ-2.0",
+            "max_deck_slots": 18,
+            "staging_slots": 6,
+            "min_volume_ul": 0.5,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 10.0,
+            "min_temp_c": -20.0,
+            "max_temp_c": 99.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "UV-Vis",
+        "fluorescence_plate_reader",
+        "optical_imaging"
+      ]
     },
     {
       "id": "biosero",
@@ -916,7 +1146,41 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "biosero_gbg",
+        "deck_architecture": "modular_workcell",
+        "api_level": "GBG-9.0",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 0.5,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 10.0,
+        "min_temp_c": -80.0,
+        "max_temp_c": 105.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "biosero_gbg",
+            "instrument_model": "Biosero Green Button Go Workcell",
+            "deck_architecture": "modular_workcell",
+            "api_level": "GBG-9.0",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 0.5,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 10.0,
+            "min_temp_c": -80.0,
+            "max_temp_c": 105.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "UV-Vis",
+        "fluorescence_plate_reader",
+        "optical_imaging"
+      ]
     },
     {
       "id": "emerald-cloud-lab",
@@ -951,7 +1215,47 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "emerald_cloud_lab",
+        "deck_architecture": "cloud_symbolic_facility",
+        "api_level": "SLL-v1",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 0.1,
+        "max_volume_ul": 50000.0,
+        "dead_volume_floor_ul": 5.0,
+        "min_temp_c": -80.0,
+        "max_temp_c": 200.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "emerald_cloud_lab",
+            "instrument_model": "Emerald Cloud Lab Symbolic Facility",
+            "deck_architecture": "cloud_symbolic_facility",
+            "api_level": "SLL-v1",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 0.1,
+            "max_volume_ul": 50000.0,
+            "dead_volume_floor_ul": 5.0,
+            "min_temp_c": -80.0,
+            "max_temp_c": 200.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "XRD",
+        "Raman",
+        "NMR",
+        "LC-MS",
+        "GC-MS",
+        "UV-Vis",
+        "FTIR",
+        "fluorescence_plate_reader",
+        "optical_imaging"
+      ]
     },
     {
       "id": "strateos",
@@ -986,7 +1290,36 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "strateos_cloud_lab",
+        "deck_architecture": "cloud_symbolic_facility",
+        "api_level": "Autoprotocol-v1",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 0.5,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 10.0,
+        "min_temp_c": -20.0,
+        "max_temp_c": 98.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "strateos_cloud_lab",
+            "instrument_model": "Strateos Cloud Lab",
+            "deck_architecture": "cloud_symbolic_facility",
+            "api_level": "Autoprotocol-v1",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 0.5,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 10.0,
+            "min_temp_c": -20.0,
+            "max_temp_c": 98.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      }
     },
     {
       "id": "ginkgo-bioworks",
@@ -1021,7 +1354,43 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "ginkgo_rac",
+        "deck_architecture": "modular_workcell",
+        "api_level": "RAC-Foundry-v1",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 0.025,
+        "max_volume_ul": 1000.0,
+        "dead_volume_floor_ul": 2.5,
+        "min_temp_c": -80.0,
+        "max_temp_c": 99.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "ginkgo_rac",
+            "instrument_model": "Ginkgo Reconfigurable Automation Cart (RAC)",
+            "deck_architecture": "modular_workcell",
+            "api_level": "RAC-Foundry-v1",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 0.025,
+            "max_volume_ul": 1000.0,
+            "dead_volume_floor_ul": 2.5,
+            "min_temp_c": -80.0,
+            "max_temp_c": 99.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "LC-MS",
+        "GC-MS",
+        "UV-Vis",
+        "fluorescence_plate_reader",
+        "optical_imaging"
+      ]
     },
     {
       "id": "acceleration-consortium",
@@ -1056,7 +1425,44 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "modular_sdl",
+        "deck_architecture": "modular_workcell",
+        "api_level": "SDL-Campaign-v1",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 1.0,
+        "max_volume_ul": 10000.0,
+        "dead_volume_floor_ul": 10.0,
+        "min_temp_c": -40.0,
+        "max_temp_c": 250.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "modular_sdl",
+            "instrument_model": "Modular Self-Driving Laboratory Workcell",
+            "deck_architecture": "modular_workcell",
+            "api_level": "SDL-Campaign-v1",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 1.0,
+            "max_volume_ul": 10000.0,
+            "dead_volume_floor_ul": 10.0,
+            "min_temp_c": -40.0,
+            "max_temp_c": 250.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "XRD",
+        "Raman",
+        "NMR",
+        "LC-MS",
+        "UV-Vis",
+        "FTIR"
+      ]
     },
     {
       "id": "opentrons-python-api-v2",
@@ -1256,7 +1662,12 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "analytical_modalities": [
+        "LC-MS",
+        "UV-Vis",
+        "fluorescence_plate_reader"
+      ]
     },
     {
       "id": "aquarium",
@@ -1330,7 +1741,36 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "chemputer",
+        "deck_architecture": "flow_batch_reactor",
+        "api_level": "XDL-2.0",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 50.0,
+        "max_volume_ul": 100000.0,
+        "dead_volume_floor_ul": 100.0,
+        "min_temp_c": -78.0,
+        "max_temp_c": 200.0,
+        "high_temp_seal_threshold_c": 60.0,
+        "profiles": [
+          {
+            "platform_id": "chemputer",
+            "instrument_model": "Chemputer Modular Batch/Flow Synthesis Rig",
+            "deck_architecture": "flow_batch_reactor",
+            "api_level": "XDL-2.0",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 50.0,
+            "max_volume_ul": 100000.0,
+            "dead_volume_floor_ul": 100.0,
+            "min_temp_c": -78.0,
+            "max_temp_c": 200.0,
+            "high_temp_seal_threshold_c": 60.0
+          }
+        ]
+      }
     },
     {
       "id": "xdl-generation",
@@ -1437,7 +1877,12 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "analytical_modalities": [
+        "UV-Vis",
+        "fluorescence_plate_reader",
+        "optical_imaging"
+      ]
     },
     {
       "id": "bluesky",
@@ -1473,7 +1918,43 @@
       "doi": null,
       "tasks": [],
       "record_count": null,
-      "last_checked": "2026-11-18"
+      "last_checked": "2026-11-18",
+      "hardware_capabilities": {
+        "platform_id": "epics_beamline",
+        "deck_architecture": "beamline_station",
+        "api_level": "RunEngine-1.12",
+        "max_deck_slots": null,
+        "staging_slots": 0,
+        "min_volume_ul": 1.0,
+        "max_volume_ul": 5000.0,
+        "dead_volume_floor_ul": 5.0,
+        "min_temp_c": -196.0,
+        "max_temp_c": 500.0,
+        "high_temp_seal_threshold_c": 80.0,
+        "profiles": [
+          {
+            "platform_id": "epics_beamline",
+            "instrument_model": "Bluesky / EPICS Synchrotron Beamline Endstation",
+            "deck_architecture": "beamline_station",
+            "api_level": "RunEngine-1.12",
+            "max_deck_slots": null,
+            "staging_slots": 0,
+            "min_volume_ul": 1.0,
+            "max_volume_ul": 5000.0,
+            "dead_volume_floor_ul": 5.0,
+            "min_temp_c": -196.0,
+            "max_temp_c": 500.0,
+            "high_temp_seal_threshold_c": 80.0
+          }
+        ]
+      },
+      "analytical_modalities": [
+        "XRD",
+        "SAXS_WAXS",
+        "Raman",
+        "UV-Vis",
+        "optical_imaging"
+      ]
     },
     {
       "id": "or-tools",
@@ -2068,7 +2549,7 @@
         "eval_only"
       ],
       "scraping_policy": "git_or_hf_download",
-      "contamination_warning": null,
+      "contamination_warning": "Held-out embodied lab manipulation benchmark (NOASSERTION license); exclude evaluation scenes from L3 training corpora.",
       "huggingface_id": null,
       "doi": "10.48550/arXiv.2505.14030",
       "tasks": [

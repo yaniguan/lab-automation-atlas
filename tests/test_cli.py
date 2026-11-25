@@ -28,6 +28,18 @@ def test_cli_list_filters_and_json_output(capsys: pytest.CaptureFixture[str]) ->
     assert "bioprobench" not in ids
     assert "lab-bench" not in ids
 
+    rc = cli_main(["list", "--modality", "Raman", "--json"])
+    assert rc == 0
+    raman_entries = json.loads(capsys.readouterr().out)
+    raman_ids = {e["id"] for e in raman_entries}
+    assert {"lab-attrib", "emerald-cloud-lab", "bluesky"} <= raman_ids
+
+    rc = cli_main(["list", "--min-volume-at-most", "0.5", "--max-volume-at-least", "1000", "--json"])
+    assert rc == 0
+    vol_entries = json.loads(capsys.readouterr().out)
+    vol_ids = {e["id"] for e in vol_entries}
+    assert {"hamilton", "tecan", "emerald-cloud-lab"} <= vol_ids
+
 
 def test_cli_inspect_compatibility_export_validate_and_check_links(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
