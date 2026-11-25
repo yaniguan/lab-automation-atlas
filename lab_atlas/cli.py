@@ -10,6 +10,7 @@ from typing import Sequence
 
 from .catalog import (
     ALLOWED_CATEGORIES,
+    ALLOWED_MODALITIES,
     ALLOWED_PURPOSES,
     ALLOWED_STATUSES,
     REPO_ROOT,
@@ -47,6 +48,9 @@ def _cmd_list(args: argparse.Namespace) -> int:
         protocol_format=args.protocol_format,
         allowed_purpose=args.purpose,
         has_simulator=has_sim,
+        modality=args.modality,
+        min_volume_at_most=args.min_volume_at_most,
+        max_volume_at_least=args.max_volume_at_least,
         query=args.query,
     )
 
@@ -225,6 +229,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_list.add_argument("--protocol-format", help="Substring match on protocol_formats")
     p_list.add_argument("--purpose", choices=ALLOWED_PURPOSES, help="Filter by allowed_purposes")
     p_list.add_argument("--has-simulator", action="store_true", help="Only tools with offline simulator")
+    p_list.add_argument(
+        "--modality",
+        choices=ALLOWED_MODALITIES,
+        help="Filter by analytical characterization modality (e.g., XRD, Raman, NMR, LC-MS)",
+    )
+    p_list.add_argument(
+        "--min-volume-at-most",
+        type=float,
+        default=None,
+        help="Only entries supporting min_volume_ul <= this value",
+    )
+    p_list.add_argument(
+        "--max-volume-at-least",
+        type=float,
+        default=None,
+        help="Only entries supporting max_volume_ul >= this value",
+    )
     p_list.add_argument("--query", "-q", help="Free-text keyword search")
     p_list.add_argument("--json", action="store_true", help="Output JSON array")
     p_list.set_defaults(func=_cmd_list)

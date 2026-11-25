@@ -13,7 +13,7 @@ Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilto
 
 ### Role in the Auto-Lab `L0`–`L6` Hierarchy
 - **Executive Planning & Procurement (`L5`)**: Supplies typed JSON/YAML queries (`lab-atlas list`, `lab-atlas compatibility`) to [`labshift`](https://github.com/yaniguan/labshift), [`buy-or-make`](https://github.com/yaniguan/buy-or-make), and [`lab-decide`](https://github.com/yaniguan/lab-decide).
-- **Simulation & Default-Deny Verification (`L4`)**: Cross-indexes embodied robotics twins (`LabUtopia`, `AutoBio`, `MATTERIX`) in [`lab-rehearsal`](https://github.com/yaniguan/lab-rehearsal) and formal Lean 4 / SQL benchmarks (`Lean 4`, `miniF2F`, `Spider 2.0`) in [`lab-verify`](https://github.com/yaniguan/lab-verify).
+- **Simulation, Verification & Post-Run Attribution (`L4`)**: Cross-indexes embodied robotics twins (`LabUtopia`, `AutoBio`, `MATTERIX`) in [`lab-rehearsal`](https://github.com/yaniguan/lab-rehearsal), formal Lean 4 / SQL benchmarks (`Lean 4`, `miniF2F`, `Spider 2.0`) in [`lab-verify`](https://github.com/yaniguan/lab-verify), and post-execution causal blame / NNLS XRD deconvolution in [`lab-attrib`](https://github.com/yaniguan/lab-attrib).
 - **Motor & Compiler Grounding (`L1` / `L3`)**: Maps target liquid handlers to open SDKs/simulators consumed by [`stepbot`](https://github.com/yaniguan/stepbot) and [`twinstep`](https://github.com/yaniguan/twinstep).
 - **License-Gated Data Hub Alignment (`L2`)**: Harmonizes dataset SPDX expressions, `commercial_use_ok`, and `allowed_purposes` (`train_commercial` vs `eval_only`) with [`assayfold`](https://github.com/yaniguan/assayfold) and [`labbench-posttrain`](https://github.com/yaniguan/labbench-posttrain).
 
@@ -22,11 +22,11 @@ Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilto
 ## 2. Data
 
 ### Canonical Catalog (`atlas.json` & `schema/atlas.schema.json`)
-All `58` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
+All `59` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
 
 | Category ID | Section Title | Entries | Key Governance Fields |
 |---|---|---:|---|
-| `autolab_sibling` | Related Auto-Lab repositories (`L6` to `L0`) | 20 | `layer` (`Hub`, `L6`..`L0`), `spdx_license` (`MIT`), `has_simulator` |
+| `autolab_sibling` | Related Auto-Lab repositories (`L6` to `L0`) | 21 | `layer` (`Hub`, `L6`..`L0`), `spdx_license` (`MIT`), `has_simulator` |
 | `hardware` | Liquid handlers and lab robots | 5 | `supported_hardware`, `protocol_formats`, `has_simulator` |
 | `cloud_lab` | Cloud labs and automated foundries | 4 | `maintenance_status` (`Strateos` flagged `commercial_restructured`) |
 | `software` | Open-source lab automation software | 12 | `spdx_license`, `osi_approved` (non-OSI flagged), `maintenance_status` (`Aquarium` `archived`, `Autoprotocol` & `XDL generation` `legacy`) |
@@ -75,3 +75,16 @@ All `58` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020
 1. **Single Source of Truth (`atlas.json` <-> `README.md`)**: Eliminates drift between programmatic JSON/YAML agent queries and human-readable Markdown tables.
 2. **SPDX & Benchmark-Contamination Hygiene**: Aligns dataset licensing directly with `assayfold` while explicitly guarding `LAB-Bench`, `BioProBench`, and `BioPlanner` against training contamination.
 3. **Zero-Dependency, Security-Hardened Link Auditing**: Combines balanced-parenthesis Markdown parsing, local heading-anchor verification, SSRF/downgrade redirect blocking, per-host concurrency limits, and explicit WAF `403` allowlisting in pure standard-library Python.
+
+---
+
+## 7. 15-Repository Auto-Lab Wire Contract (`autolab-wire/v1`)
+
+[`autolab_wire.py`](../autolab_wire.py) (`REPO_ID = "lab-automation-atlas"`, `LAYER = "L5"`) implements the standardized `process_packet(packet: dict) -> dict` contract connecting `lab-automation-atlas` into the 15-repository closed-loop Auto-Lab wire:
+
+- **Path & State Hygiene**: Resolves [`atlas.json`](../atlas.json) strictly via `REPO_DIR = Path(__file__).resolve().parent`, deep-copies incoming packets, initializes `autolab-wire/v1` defaults, and passes already-halted packets (`halted=True`) through unchanged.
+- **15-Repository Pipeline Topology**:
+  - **Upstream (`L2` / `L6`)**: Receives protocol/assay packets from [`assayfold`](https://github.com/yaniguan/assayfold), [`lab-ears`](https://github.com/yaniguan/lab-ears), [`lab-ask-why`](https://github.com/yaniguan/lab-ask-why), and [`lab-decide`](https://github.com/yaniguan/lab-decide).
+  - **Peer & Downstream (`L5` -> `L4` -> `L1`/`L0` -> `L4` -> `L3`)**: Dynamically resolves `platform_grounding` per `target_platform` from `atlas.json` `hardware_capabilities` (e.g., `opentrons_ot2` -> `api_level: "2.16"`, `max_deck_slots: 11`; `opentrons_flex` -> `api_level: "2.20"`, `max_deck_slots: 12`, `staging_slots: 4`; `hamilton_star` -> `api_level: "VENUS-6"`, `deck_architecture: "carrier_rails"`; `chemputer` -> `api_level: "XDL-2.0"`, `deck_architecture: "flow_batch_reactor"`; default-deny `L5_ATLAS_UNKNOWN_PLATFORM` on unrecognized platforms) and routes `analytical_modalities` (`XRD`, `Raman`, `NMR`, `LC-MS`, `UV-Vis`, `FTIR`) to [`buy-or-make`](https://github.com/yaniguan/buy-or-make), [`labshift`](https://github.com/yaniguan/labshift), [`lab-rehearsal`](https://github.com/yaniguan/lab-rehearsal), [`lab-verify`](https://github.com/yaniguan/lab-verify), [`stepbot`](https://github.com/yaniguan/stepbot), [`lab-hands`](https://github.com/yaniguan/lab-hands), [`lab-feet`](https://github.com/yaniguan/lab-feet), [`lab-attrib`](https://github.com/yaniguan/lab-attrib), [`twinstep`](https://github.com/yaniguan/twinstep), [`labfill`](https://github.com/yaniguan/labfill), and [`labbench-posttrain`](https://github.com/yaniguan/labbench-posttrain).
+- **Formal Safety, SPDX Lattice & Contamination Gate (`eval_only_blocked_from_training`)**: Validates `resource_url` against `lab_atlas.linkcheck.validate_url_target` (canonical HTTPS-only public host, blocking octal/hex/integer IPv4 and IPv6 transition SSRF targets), evaluates compound SPDX 2.3/3.0 expressions (`AND`, `OR`, `WITH`) and `parent_licenses` lineage taint via `lab_atlas.spdx` in 1-to-1 parity with `lean/LabAtlasLean.lean`, cross-matches `resource_url` against `atlas.json` (`eval_only` / `rag_pointer_only`), and halts restricted or unknown training corpora with `halt_reason="L5_ATLAS_LICENSE_OR_URL_BLOCK"`.
+

@@ -2,18 +2,35 @@
 
 Inspired by di-omics/plr-mcp, K-Dense-AI/LabMCP, and Anthropic's Model Hardware Standard.
 Compiles typed physical specifications (pipette [min, max] volume, dead-volume floor,
-temperature limits, high-temperature evaporation seal coupling, mandatory deck_epoch,
-HTTPS-only endpoint, and SPDX license posture) into closed JSON-Schema MCP tool
-descriptors paired with executable precondition guards.
+signed cryogenic-to-reflux temperature limits, high-temperature evaporation seal coupling,
+mandatory deck_epoch, SSRF-hardened HTTPS endpoint, and compound SPDX license posture) into
+closed JSON-Schema MCP tool descriptors paired with executable precondition guards in 1-to-1
+parity with `lean/LabAtlasLean.lean`.
 """
 
 from __future__ import annotations
 
-import ipaddress
-import urllib.parse
+import sys
+import urllib.error
 from dataclasses import dataclass
-from typing import Any
+from pathlib import Path
+from typing import Any, Callable
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from lab_atlas.catalog import load_catalog_cached  # noqa: E402
+from lab_atlas.linkcheck import SecurityValidationError, validate_url_target  # noqa: E402
+from lab_atlas.spdx import (  # noqa: E402
+    evaluate_spdx_expression,
+    is_academic_train_ok,
+    is_commercial_train_ok,
+)
+
+MIN_CRYO_FLOOR_TENTH_C = -2000  # -200.0 C in signed tenths of degrees Celsius
+
+# Backward-compatible reference map; full single & compound SPDX evaluation uses `lab_atlas.spdx`.
 SPDX_TO_LICENSE_CLASS: dict[str, str] = {
     "MIT": "permissive",
     "Apache-2.0": "permissive",
@@ -47,6 +64,74 @@ class HardwareCapabilitySpec:
     high_temp_seal_threshold_c: float = 80.0
     required_deck_epoch: bool = True
 
+    @classmethod
+    def from_atlas_entry(
+        cls,
+        entry: dict[str, Any],
+        *,
+        profile_id: str | None = None,
+        tool_name: str | None = None,
+        https_endpoint: str | None = None,
+        spdx_license: str | None = None,
+    ) -> "HardwareCapabilitySpec":
+        """Instantiate a `HardwareCapabilitySpec` directly from a verified `atlas.json` entry."""
+        hw_cap = entry.get("hardware_capabilities")
+        if not isinstance(hw_cap, dict):
+            raise McpCardCompilationError(
+                f"Atlas entry {entry.get('id')!r} does not define hardware_capabilities."
+            )
+
+        selected: dict[str, Any] = hw_cap
+        profiles = hw_cap.get("profiles")
+        if profile_id is not None:
+            if not isinstance(profiles, list):
+                raise McpCardCompilationError(
+                    f"Atlas entry {entry.get('id')!r} has no profiles to match profile_id={profile_id!r}."
+                )
+            matched = [p for p in profiles if isinstance(p, dict) and p.get("platform_id") == profile_id]
+            if not matched:
+                raise McpCardCompilationError(
+                    f"profile_id={profile_id!r} not found in atlas entry {entry.get('id')!r}."
+                )
+            selected = matched[0]
+        elif isinstance(profiles, list) and profiles and isinstance(profiles[0], dict):
+            selected = profiles[0]
+
+        for req_field in (
+            "min_volume_ul",
+            "max_volume_ul",
+            "dead_volume_floor_ul",
+            "min_temp_c",
+            "max_temp_c",
+            "high_temp_seal_threshold_c",
+        ):
+            if selected.get(req_field) is None:
+                raise McpCardCompilationError(
+                    f"Hardware profile for {entry.get('id')!r} is missing numeric {req_field!r}."
+                )
+
+        default_endpoint = (
+            entry["links"][0]["url"]
+            if isinstance(entry.get("links"), list) and entry["links"]
+            else ""
+        )
+        slug = str(selected.get("platform_id") or entry.get("id") or "instrument").replace("-", "_")
+        model_label = str(selected.get("instrument_model") or entry.get("name") or slug)
+
+        return cls(
+            tool_name=tool_name or f"{slug}_transfer_and_incubate",
+            instrument_model=model_label,
+            https_endpoint=https_endpoint or default_endpoint,
+            spdx_license=spdx_license or str(entry.get("spdx_license", "")),
+            min_volume_ul=float(selected["min_volume_ul"]),
+            max_volume_ul=float(selected["max_volume_ul"]),
+            dead_volume_floor_ul=float(selected["dead_volume_floor_ul"]),
+            min_temp_c=float(selected["min_temp_c"]),
+            max_temp_c=float(selected["max_temp_c"]),
+            high_temp_seal_threshold_c=float(selected["high_temp_seal_threshold_c"]),
+            required_deck_epoch=True,
+        )
+
 
 @dataclass(frozen=True)
 class CompiledMcpCapabilityCard:
@@ -68,28 +153,39 @@ class McpCallDecision:
     detail: str
 
 
-def _is_https_and_public_host(url: str) -> bool:
-    parsed = urllib.parse.urlsplit(url)
-    if parsed.scheme.lower() != "https" or not parsed.hostname:
-        return False
-    host = parsed.hostname.lower()
-    if host in {"localhost", "ip6-localhost"} or host.endswith(".local"):
+def _is_https_and_public_host(
+    url: str,
+    *,
+    resolve_dns: bool = False,
+    resolver: Callable[..., Any] | None = None,
+) -> bool:
+    """Delegate MCP endpoint SSRF validation directly to `lab_atlas.linkcheck.validate_url_target`."""
+    if not isinstance(url, str):
         return False
     try:
-        ip = ipaddress.ip_address(host)
-    except ValueError:
-        return True
-    return not (
-        ip.is_private
-        or ip.is_loopback
-        or ip.is_link_local
-        or ip.is_multicast
-        or ip.is_unspecified
-    )
+        validate_url_target(
+            url,
+            require_https=True,
+            resolve_dns=resolve_dns,
+            resolver=resolver,
+        )
+    except (SecurityValidationError, urllib.error.URLError):
+        return False
+    return True
 
 
 def _to_tenth_ul(val_ul: float) -> int:
     return int(round(val_ul * 10.0))
+
+
+def _to_tenth_c(val_c: float) -> int:
+    return int(round(val_c * 10.0))
+
+
+def _is_recognized_spdx(expr: object) -> bool:
+    if not isinstance(expr, str) or not expr.strip():
+        return False
+    return evaluate_spdx_expression(expr, allow_policy_aliases=False).spdx_known
 
 
 def audit_mcp_tool_descriptor(descriptor: dict[str, Any]) -> tuple[float, list[str]]:
@@ -137,7 +233,7 @@ def audit_mcp_tool_descriptor(descriptor: dict[str, Any]) -> tuple[float, list[s
 
     if not (
         isinstance(env, dict)
-        and env.get("spdx_license") in SPDX_TO_LICENSE_CLASS
+        and _is_recognized_spdx(env.get("spdx_license"))
         and "license_class" in env
     ):
         missing.append("verified_spdx_license_posture")
@@ -150,17 +246,26 @@ def audit_mcp_tool_descriptor(descriptor: dict[str, Any]) -> tuple[float, list[s
     return round(passed / 8.0, 4), missing
 
 
-def compile_mcp_capability_card(spec: HardwareCapabilitySpec) -> CompiledMcpCapabilityCard:
+def compile_mcp_capability_card(
+    spec: HardwareCapabilitySpec,
+    *,
+    resolve_dns: bool = False,
+    resolver: Callable[..., Any] | None = None,
+) -> CompiledMcpCapabilityCard:
     """Compile a typed HardwareCapabilitySpec into a closed Lean-MCP JSON-Schema card."""
     if not spec.tool_name or not spec.tool_name.strip():
         raise McpCardCompilationError("tool_name must be non-empty")
-    if not _is_https_and_public_host(spec.https_endpoint):
+    if not _is_https_and_public_host(
+        spec.https_endpoint, resolve_dns=resolve_dns, resolver=resolver
+    ):
         raise McpCardCompilationError(
             "https_ssrf_guard: endpoint must use HTTPS and not target private/loopback IPs"
         )
-    if spec.spdx_license not in SPDX_TO_LICENSE_CLASS:
+
+    spdx_eval = evaluate_spdx_expression(spec.spdx_license, allow_policy_aliases=False)
+    if not spdx_eval.spdx_known:
         raise McpCardCompilationError(
-            f"explicit_spdx_license: unknown SPDX identifier {spec.spdx_license!r}"
+            f"explicit_spdx_license: unknown or malformed SPDX expression {spec.spdx_license!r}"
         )
     if not spec.required_deck_epoch:
         raise McpCardCompilationError(
@@ -174,13 +279,17 @@ def compile_mcp_capability_card(spec: HardwareCapabilitySpec) -> CompiledMcpCapa
         raise McpCardCompilationError(
             "well_formed_physical_bounds: invalid volume or dead-volume bounds"
         )
-    if spec.min_temp_c > spec.max_temp_c or spec.high_temp_seal_threshold_c < spec.min_temp_c:
+
+    min_t_10 = _to_tenth_c(spec.min_temp_c)
+    max_t_10 = _to_tenth_c(spec.max_temp_c)
+    seal_t_10 = _to_tenth_c(spec.high_temp_seal_threshold_c)
+    if min_t_10 < MIN_CRYO_FLOOR_TENTH_C or min_t_10 > max_t_10 or seal_t_10 < min_t_10:
         raise McpCardCompilationError(
-            "well_formed_physical_bounds: invalid thermal envelope bounds"
+            "well_formed_physical_bounds: invalid or below-cryo-floor thermal envelope bounds"
         )
 
-    license_class = SPDX_TO_LICENSE_CLASS[spec.spdx_license]
-    commercial_ok = license_class == "permissive"
+    license_class = spdx_eval.license_class
+    commercial_ok = spdx_eval.commercial_train_ok
 
     descriptor: dict[str, Any] = {
         "name": spec.tool_name,
@@ -226,12 +335,16 @@ def compile_mcp_capability_card(spec: HardwareCapabilitySpec) -> CompiledMcpCapa
             "spdx_license": spec.spdx_license,
             "license_class": license_class,
             "commercial_train_ok": commercial_ok,
+            "academic_train_ok": spdx_eval.academic_train_ok,
             "min_vol_tenth_ul": min_v_10,
             "max_vol_tenth_ul": max_v_10,
             "dead_volume_tenth_ul": dead_v_10,
             "min_temp_c": spec.min_temp_c,
             "max_temp_c": spec.max_temp_c,
             "high_temp_seal_threshold_c": spec.high_temp_seal_threshold_c,
+            "min_temp_tenth_c": min_t_10,
+            "max_temp_tenth_c": max_t_10,
+            "high_temp_seal_threshold_tenth_c": seal_t_10,
             "required_deck_epoch": True,
         },
     }
@@ -299,7 +412,7 @@ def validate_with_typed_lean_mcp_card(
     commercial_context: bool = True,
     for_training: bool = False,
 ) -> McpCallDecision:
-    """Exact runtime precondition guard mirroring LabAtlasLean.checkMcpToolCall."""
+    """Exact runtime precondition guard mirroring `LabAtlasLean.checkMcpToolCall`."""
     schema = card.descriptor["inputSchema"]
     props = schema["properties"]
     required = schema["required"]
@@ -347,7 +460,16 @@ def validate_with_typed_lean_mcp_card(
     src_10 = _to_tenth_ul(float(call_args["src_well_volume_ul"]))
     dst_10 = _to_tenth_ul(float(call_args["dst_well_volume_ul"]))
     cap_10 = _to_tenth_ul(float(call_args["dst_well_capacity_ul"]))
-    temp_c = float(call_args["temp_c"])
+    temp_10 = _to_tenth_c(float(call_args["temp_c"]))
+
+    min_t_10 = int(env.get("min_temp_tenth_c", _to_tenth_c(float(env["min_temp_c"]))))
+    max_t_10 = int(env.get("max_temp_tenth_c", _to_tenth_c(float(env["max_temp_c"]))))
+    seal_t_10 = int(
+        env.get(
+            "high_temp_seal_threshold_tenth_c",
+            _to_tenth_c(float(env["high_temp_seal_threshold_c"])),
+        )
+    )
 
     if not (env["min_vol_tenth_ul"] <= vol_10 <= env["max_vol_tenth_ul"]):
         return McpCallDecision(
@@ -363,11 +485,11 @@ def validate_with_typed_lean_mcp_card(
             "aspiration breaches dead-volume reserve or dispense overflows destination capacity",
         )
 
-    if not (env["min_temp_c"] <= temp_c <= env["max_temp_c"]):
+    if not (min_t_10 <= temp_10 <= max_t_10):
         return McpCallDecision(
             False, "thermal_and_evaporation_seal_guard", "temp_c outside thermal limits"
         )
-    if temp_c >= env["high_temp_seal_threshold_c"] and not call_args["plate_sealed"]:
+    if temp_10 >= seal_t_10 and not call_args["plate_sealed"]:
         return McpCallDecision(
             False,
             "thermal_and_evaporation_seal_guard",
@@ -380,7 +502,13 @@ def validate_with_typed_lean_mcp_card(
             "eval_only_contamination_guard",
             "eval_only resource blocked from training pipeline",
         )
-    if commercial_context and not card.commercial_train_ok:
+    if for_training and not is_academic_train_ok(card.license_class):
+        return McpCallDecision(
+            False,
+            "academic_training_license_guard",
+            f"license class {card.license_class} blocked from all training pipelines",
+        )
+    if commercial_context and not is_commercial_train_ok(card.license_class):
         return McpCallDecision(
             False,
             "driver_commercial_license_guard",
@@ -585,18 +713,14 @@ def _generate_50_candidate_calls() -> list[tuple[dict[str, Any], bool, str, str]
 def run_benchmark(num_calls: int = 50, seed: int = 2026) -> dict[str, Any]:
     """Compare prompt_only_schema vs typed_lean_mcp_card over 50 candidate MCP calls."""
     _ = seed  # Deterministic canonical 50-call suite; seed retained for uniform API
-    base_spec = HardwareCapabilitySpec(
+    catalog = load_catalog_cached()
+    hamilton_entry = next(e for e in catalog["entries"] if e["id"] == "hamilton")
+    base_spec = HardwareCapabilitySpec.from_atlas_entry(
+        hamilton_entry,
+        profile_id="hamilton_star",
         tool_name="hamilton_star_transfer_and_incubate",
-        instrument_model="Hamilton Microlab STAR 1000uL Core",
         https_endpoint="https://workcell-gateway.autolab.example/mcp/v1/star",
         spdx_license="MIT",
-        min_volume_ul=1.0,
-        max_volume_ul=1000.0,
-        dead_volume_floor_ul=15.0,
-        min_temp_c=4.0,
-        max_temp_c=98.0,
-        high_temp_seal_threshold_c=80.0,
-        required_deck_epoch=True,
     )
     prompt_schema = build_prompt_only_schema(base_spec)
     prompt_completeness, prompt_missing = audit_mcp_tool_descriptor(prompt_schema)

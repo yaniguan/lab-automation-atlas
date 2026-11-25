@@ -168,3 +168,191 @@ def test_pure_english_and_lean_file_integrity() -> None:
     for path in checked_paths:
         text = path.read_text(encoding="utf-8")
         assert CJK_RE.search(text) is None, f"CJK character found in {path}"
+
+
+@pytest.mark.parametrize(
+    "bad_mcp_endpoint",
+    [
+        "https://localhost./mcp",
+        "https://api.localhost/mcp",
+        "https://svc.internal/mcp",
+        "https://user:secret@example.com/mcp",
+        "https://[::127.0.0.1]/mcp",
+        "https://[64:ff9b::127.0.0.1]/mcp",
+        "https://[::ffff:0:127.0.0.1]/mcp",
+        "https://127.1/mcp",
+        "https://0177.0.0.1/mcp",
+        "https://0x7f000001/mcp",
+    ],
+)
+def test_issue_24_mcp_endpoint_ssrf_parity_with_linkcheck(bad_mcp_endpoint: str) -> None:
+    """Issue #24: Ensure MCP endpoint validator shares full SSRF canonicalization parity with linkcheck."""
+    from community_extensions.mcp_capability_cards import _is_https_and_public_host
+
+    assert _is_https_and_public_host(bad_mcp_endpoint) is False
+    with pytest.raises(McpCardCompilationError, match="https_ssrf_guard"):
+        compile_mcp_capability_card(_sample_spec(https_endpoint=bad_mcp_endpoint))
+
+
+def test_issue_25_and_28_compound_spdx_and_from_atlas_entry_cards() -> None:
+    """Issues #25 & #28: Compile cards from compound SPDX expressions and verified atlas.json entries."""
+    from lab_atlas.catalog import load_catalog
+
+    dual_card = compile_mcp_capability_card(_sample_spec(spdx_license="MIT OR Apache-2.0"))
+    assert dual_card.license_class == "permissive"
+    assert dual_card.commercial_train_ok is True
+
+    conj_card = compile_mcp_capability_card(_sample_spec(spdx_license="MIT AND BSD-3-Clause"))
+    assert conj_card.license_class == "permissive"
+    assert conj_card.commercial_train_ok is True
+
+    with_card = compile_mcp_capability_card(
+        _sample_spec(spdx_license="Apache-2.0 WITH LLVM-exception")
+    )
+    assert with_card.license_class == "permissive"
+
+    tainted_card = compile_mcp_capability_card(_sample_spec(spdx_license="MIT AND CC-BY-NC-4.0"))
+    assert tainted_card.license_class == "non_commercial"
+    assert tainted_card.commercial_train_ok is False
+
+    catalog = load_catalog()
+    by_id = {e["id"]: e for e in catalog["entries"]}
+
+    ot_flex_spec = HardwareCapabilitySpec.from_atlas_entry(
+        by_id["opentrons"],
+        profile_id="opentrons_flex",
+        https_endpoint="https://flex.autolab.example/mcp/v1/pipette",
+    )
+    ot_flex_card = compile_mcp_capability_card(ot_flex_spec)
+    assert ot_flex_card.completeness_score == 1.0
+    assert ot_flex_spec.min_volume_ul == 1.0
+    assert ot_flex_spec.max_volume_ul == 1000.0
+
+    # Cryogenic / sub-zero thermal envelope (-80.0 C to 200.0 C) from emerald-cloud-lab entry
+    ecl_spec = HardwareCapabilitySpec.from_atlas_entry(
+        by_id["emerald-cloud-lab"],
+        https_endpoint="https://ecl-gateway.autolab.example/mcp/v1/run",
+    )
+    ecl_card = compile_mcp_capability_card(ecl_spec)
+    assert ecl_spec.min_temp_c == -80.0
+    cryo_call = {
+        "deck_epoch": 5,
+        "volume_ul": 10.0,
+        "src_well_volume_ul": 50.0,
+        "dst_well_volume_ul": 0.0,
+        "dst_well_capacity_ul": 200.0,
+        "temp_c": -20.0,
+        "plate_sealed": False,
+    }
+    assert validate_with_typed_lean_mcp_card(
+        ecl_card, cryo_call, live_deck_epoch=5, commercial_context=False
+    ).allowed is True
+
+    # Below -200.0 C cryogenic floor must be rejected at card compile time
+    with pytest.raises(McpCardCompilationError, match="well_formed_physical_bounds"):
+        compile_mcp_capability_card(_sample_spec(min_temp_c=-250.0))
+
+
+def test_issue_26_exhaustive_lean_python_lattice_and_truth_table_parity() -> None:
+    """Issue #26: Verify algebraic lattice laws and all 160 checkAtlasResource states match LabAtlasLean."""
+    import itertools
+
+    from lab_atlas.spdx import (
+        LICENSE_CLASSES_ORDERED,
+        check_atlas_resource_policy,
+        effective_license_class,
+        is_academic_train_ok,
+        is_commercial_train_ok,
+        license_conj,
+        license_disj,
+    )
+
+    # 1. Verify all 25 pairs and 125 triples for bounded distributive lattice & homomorphism laws
+    for a, b in itertools.product(LICENSE_CLASSES_ORDERED, repeat=2):
+        assert license_conj(a, b) == license_conj(b, a)
+        assert license_disj(a, b) == license_disj(b, a)
+        assert license_conj(a, a) == a
+        assert license_disj(a, a) == a
+        assert license_conj("permissive", a) == a
+        assert license_conj("eval_only", a) == "eval_only"
+        assert license_conj(a, license_disj(a, b)) == a
+        assert license_disj(a, license_conj(a, b)) == a
+        assert is_commercial_train_ok(license_conj(a, b)) == (
+            is_commercial_train_ok(a) and is_commercial_train_ok(b)
+        )
+        assert is_academic_train_ok(license_conj(a, b)) == (
+            is_academic_train_ok(a) and is_academic_train_ok(b)
+        )
+        assert is_commercial_train_ok(license_disj(a, b)) == (
+            is_commercial_train_ok(a) or is_commercial_train_ok(b)
+        )
+        assert is_academic_train_ok(license_disj(a, b)) == (
+            is_academic_train_ok(a) or is_academic_train_ok(b)
+        )
+
+    for a, b, c in itertools.product(LICENSE_CLASSES_ORDERED, repeat=3):
+        assert license_conj(license_conj(a, b), c) == license_conj(a, license_conj(b, c))
+        assert license_disj(license_disj(a, b), c) == license_disj(a, license_disj(b, c))
+        if "eval_only" in (a, b):
+            assert effective_license_class([a, b], c) == "eval_only"
+
+    # 2. Exhaustively check all 2 * 2 * 2 * 5 * 2 * 2 = 160 states against LabAtlasLean.checkAtlasResource
+    states_checked = 0
+    for https_only, no_priv_ip, spdx_known, lic_cls, for_training, commercial in itertools.product(
+        (False, True),
+        (False, True),
+        (False, True),
+        LICENSE_CLASSES_ORDERED,
+        (False, True),
+        (False, True),
+    ):
+        states_checked += 1
+        py_rule = check_atlas_resource_policy(
+            https_only=https_only,
+            no_private_ip=no_priv_ip,
+            spdx_known=spdx_known,
+            license_class=lic_cls,
+            for_training=for_training,
+            commercial=commercial,
+        )
+
+        # Reference specification directly mirroring LabAtlasLean.checkAtlasResource rule order
+        if not (https_only and no_priv_ip):
+            lean_expected = "https_ssrf_guard"
+        elif not spdx_known:
+            lean_expected = "explicit_spdx_license"
+        elif for_training and lic_cls == "eval_only":
+            lean_expected = "eval_only_contamination_guard"
+        elif for_training and lic_cls in ("custom_terms", "eval_only"):
+            lean_expected = "academic_training_license_guard"
+        elif for_training and commercial and lic_cls != "permissive":
+            lean_expected = "commercial_training_license_guard"
+        else:
+            lean_expected = None
+
+        assert py_rule == lean_expected
+
+    assert states_checked == 160
+
+    # Specifically confirm custom_terms is rejected in academic training on MCP runtime guard as well
+    custom_card = compile_mcp_capability_card(
+        _sample_spec(spdx_license="LicenseRef-VendorCustom")
+    )
+    valid_args = {
+        "deck_epoch": 1,
+        "volume_ul": 20.0,
+        "src_well_volume_ul": 100.0,
+        "dst_well_volume_ul": 10.0,
+        "dst_well_capacity_ul": 200.0,
+        "temp_c": 25.0,
+        "plate_sealed": False,
+    }
+    dec = validate_with_typed_lean_mcp_card(
+        custom_card,
+        valid_args,
+        live_deck_epoch=1,
+        commercial_context=False,
+        for_training=True,
+    )
+    assert dec.allowed is False
+    assert dec.rule_violated == "academic_training_license_guard"

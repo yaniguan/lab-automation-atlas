@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import concurrent.futures
 import html
+import http.client
 import ipaddress
 import json
 import re
 import socket
+import ssl
 import threading
 import time
 import urllib.error
@@ -45,6 +47,7 @@ WAF_403_ALLOWLIST_DOMAINS: frozenset[str] = frozenset(
 
 TRANSIENT_HTTP_CODES: frozenset[int] = frozenset({429, 502, 503, 504})
 HEAD_FALLBACK_CODES: frozenset[int] = frozenset({400, 403, 405, 501})
+RANGE_FALLBACK_CODES: frozenset[int] = frozenset({400, 416, 501})
 
 _SOFT_404_TITLE_PATTERNS = (
     re.compile(r"\b404\b.*\bnot\s+found\b", re.IGNORECASE),
@@ -53,7 +56,10 @@ _SOFT_404_TITLE_PATTERNS = (
     re.compile(r"\bparked\s+domain\b", re.IGNORECASE),
 )
 
-_FENCED_CODE_RE = re.compile(r"(^|\n)(```+|~~~+)[^\n]*\n.*?\n\2[ \t]*(?=\n|$)", re.DOTALL)
+_FENCED_CODE_RE = re.compile(
+    r"(^|\n)[ ]{0,3}(```+|~~~+)[^\n]*\n(?:.*?\n)?[ ]{0,3}\2[ \t]*(?=\n|$)",
+    re.DOTALL,
+)
 _INLINE_CODE_RE = re.compile(r"(`+)([^`]*?)\1")
 _REF_DEF_RE = re.compile(
     r"^[ ]{0,3}\[([^\]]+)\]:[ \t]*(?:<([^>\s]+)>|([^\s\"'(]+))(?:[ \t]+(?:\"[^\"]*\"|'[^']*'|\([^)]*\)))?[ \t]*$",
@@ -147,6 +153,37 @@ def _parse_inline_destination(raw_inside: str) -> str | None:
     return dest or None
 
 
+def _is_backslash_escaped(text: str, index: int) -> bool:
+    """Return True when the character at `index` is preceded by an odd number of backslashes."""
+    backslashes = 0
+    pos = index - 1
+    while pos >= 0 and text[pos] == "\\":
+        backslashes += 1
+        pos -= 1
+    return (backslashes % 2) == 1
+
+
+def _has_matching_open_bracket(text: str, close_bracket_pos: int) -> bool:
+    """Verify `close_bracket_pos` closes an unescaped `[` without crossing a blank line."""
+    if _is_backslash_escaped(text, close_bracket_pos):
+        return False
+    bracket_depth = 1
+    k = close_bracket_pos - 1
+    while k >= 0:
+        ch = text[k]
+        if ch == "\n" and k > 0 and text[k - 1] == "\n":
+            return False
+        if not _is_backslash_escaped(text, k):
+            if ch == "]":
+                bracket_depth += 1
+            elif ch == "[":
+                bracket_depth -= 1
+                if bracket_depth == 0:
+                    return True
+        k -= 1
+    return False
+
+
 def _iter_inline_targets(cleaned_md: str) -> list[str]:
     """Extract all inline `[label](...)` targets supporting nested balanced parentheses."""
     targets: list[str] = []
@@ -156,8 +193,10 @@ def _iter_inline_targets(cleaned_md: str) -> list[str]:
         pos = cleaned_md.find("](", idx)
         if pos == -1:
             break
-        # Ensure the preceding '[' wasn't escaped
         start = pos + 2
+        if not _has_matching_open_bracket(cleaned_md, pos):
+            idx = start
+            continue
         if start < n and cleaned_md[start] == "<":
             close_angle = cleaned_md.find(">", start + 1)
             if close_angle != -1:
@@ -355,12 +394,55 @@ def check_local_link(target: str, source_file: Path, repo_root: Path) -> LocalLi
     )
 
 
+_DNS_LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
+_HEX_TOKEN_RE = re.compile(r"^0[xX][0-9a-fA-F]+$")
+
+
+def _extract_embedded_ipv4_candidates(ip_obj: ipaddress.IPv4Address | ipaddress.IPv6Address) -> list[ipaddress.IPv4Address]:
+    """Extract embedded IPv4 targets from IPv6 transition/translation mechanisms."""
+    if not isinstance(ip_obj, ipaddress.IPv6Address):
+        return []
+    embedded: list[ipaddress.IPv4Address] = []
+    if ip_obj.ipv4_mapped is not None:
+        embedded.append(ip_obj.ipv4_mapped)
+    if ip_obj.sixtofour is not None:
+        embedded.append(ip_obj.sixtofour)
+    if ip_obj.teredo is not None:
+        server_v4, client_v4 = ip_obj.teredo
+        embedded.append(server_v4)
+        embedded.append(client_v4)
+
+    val = int(ip_obj)
+    low32 = val & 0xFFFFFFFF
+    high96 = val >> 32
+    high80 = val >> 80
+
+    # SIIT IPv4-translated (::ffff:0:0:0/96, RFC 2765 / RFC 6145)
+    # NAT64 Well-Known Prefix (64:ff9b::/96, RFC 6052) and Local-Use (64:ff9b:1::/48, RFC 8215)
+    # Deprecated IPv4-compatible IPv6 (::/96 with val > 1, RFC 4291)
+    # ISATAP interface identifiers (...:0000:5efe:w.x.y.z / ...:0200:5efe:w.x.y.z, RFC 5214)
+    if (
+        high96 == 0xFFFF0000
+        or high96 == (0x0064FF9B << 64)
+        or high80 == 0x0064FF9B0001
+        or (high96 == 0 and val > 1)
+        or ((high96 & 0xFDFFFFFF) == 0x00005EFE)
+    ):
+        embedded.append(ipaddress.IPv4Address(low32))
+
+    return embedded
+
+
 def _check_ip_safe(ip_str: str) -> None:
     ip_obj = ipaddress.ip_address(ip_str)
-    mapped = getattr(ip_obj, "ipv4_mapped", None)
-    for candidate in (ip_obj, mapped) if mapped is not None else (ip_obj,):
+    candidates: list[ipaddress.IPv4Address | ipaddress.IPv6Address] = [
+        ip_obj,
+        *_extract_embedded_ipv4_candidates(ip_obj),
+    ]
+    for candidate in candidates:
         if (
-            candidate.is_private
+            not candidate.is_global
+            or candidate.is_private
             or candidate.is_loopback
             or candidate.is_link_local
             or candidate.is_multicast
@@ -378,44 +460,98 @@ def validate_url_target(
     require_https: bool = True,
     resolve_dns: bool = False,
     resolver: Callable[..., Any] | None = None,
+    pinned_ips: dict[tuple[str, int], list[str]] | None = None,
 ) -> urllib.parse.SplitResult:
-    """Validate URL scheme, credentials, hostname, and IP/DNS SSRF boundaries."""
+    """Validate URL scheme, credentials, canonical hostname/port, and IP/DNS SSRF boundaries."""
+    if not isinstance(url, str) or not url:
+        raise SecurityValidationError(f"Empty or non-string URL rejected: {url!r}.")
+    if any(ord(ch) <= 0x20 or ord(ch) >= 0x7F for ch in url) or "\\" in url:
+        raise SecurityValidationError(
+            f"Control, whitespace, backslash, or non-ASCII characters forbidden in URL: {url!r}."
+        )
+
     parsed = urllib.parse.urlsplit(url)
     scheme = parsed.scheme.lower()
     if require_https and scheme != "https":
         raise SecurityValidationError(f"Non-HTTPS URL rejected: {url!r} (scheme={scheme!r}).")
     if not require_https and scheme not in ("http", "https"):
         raise SecurityValidationError(f"Unsupported URL scheme: {url!r} (scheme={scheme!r}).")
-    if parsed.username or parsed.password:
+    if parsed.username is not None or parsed.password is not None or "@" in parsed.netloc:
         raise SecurityValidationError(f"Credentials in URL are forbidden: {url!r}.")
 
-    host = (parsed.hostname or "").strip().lower().rstrip(".")
-    if not host:
+    try:
+        explicit_port = parsed.port
+    except ValueError as exc:
+        raise SecurityValidationError(f"Malformed or out-of-range port in URL {url!r}: {exc}") from exc
+    if explicit_port is not None and not (1 <= explicit_port <= 65535):
+        raise SecurityValidationError(f"Port out of valid TCP range in URL {url!r}: {explicit_port}.")
+
+    raw_host = (parsed.hostname or "").strip().lower()
+    if not raw_host:
         raise SecurityValidationError(f"Missing hostname in URL: {url!r}.")
-    if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
+    if "%" in raw_host or "%" in parsed.netloc:
+        raise SecurityValidationError(
+            f"IPv6 zone identifiers or percent-encoded netloc forbidden in URL: {url!r}."
+        )
+
+    host = raw_host.rstrip(".")
+    if not host or host.startswith(".") or ".." in host:
+        raise SecurityValidationError(f"Malformed hostname in URL: {url!r}.")
+    if host in {"localhost", "ip6-localhost", "ip6-loopback", "broadcasthost"} or host.endswith(
+        (".localhost", ".local", ".internal", ".home.arpa", ".localdomain")
+    ):
         raise SecurityValidationError(f"Blocked local hostname {host!r} (SSRF protection).")
 
+    effective_port = explicit_port or (443 if scheme == "https" else 80)
+
     try:
-        ipaddress.ip_address(host)
+        ip_obj = ipaddress.ip_address(host)
         is_literal_ip = True
     except ValueError:
+        ip_obj = None
         is_literal_ip = False
 
-    if is_literal_ip:
-        _check_ip_safe(host)
-    elif resolve_dns:
-        lookup = resolver or socket.getaddrinfo
-        port = parsed.port or (443 if scheme == "https" else 80)
-        try:
-            infos = lookup(host, port, type=socket.SOCK_STREAM)
-        except OSError as exc:
-            raise urllib.error.URLError(f"DNS lookup failed for {host}: {exc}") from exc
-        if not infos:
-            raise urllib.error.URLError(f"DNS lookup returned no records for {host}")
-        for info in infos:
-            sockaddr = info[4]
-            if sockaddr:
-                _check_ip_safe(sockaddr[0])
+    if is_literal_ip and ip_obj is not None:
+        canonical_ip = str(ip_obj)
+        _check_ip_safe(canonical_ip)
+        if pinned_ips is not None:
+            pinned_ips[(host, effective_port)] = [canonical_ip]
+    else:
+        if ":" in host:
+            raise SecurityValidationError(
+                f"Malformed or non-canonical IPv6 literal rejected: {host!r} (SSRF protection)."
+            )
+        labels = host.split(".")
+        last_label = labels[-1]
+        if last_label.isdigit() or _HEX_TOKEN_RE.match(last_label):
+            raise SecurityValidationError(
+                f"Blocked non-canonical numeric/hex/octal IPv4 literal {host!r} (SSRF protection)."
+            )
+        if len(labels) < 2 or not all(_DNS_LABEL_RE.match(lbl) for lbl in labels):
+            raise SecurityValidationError(
+                f"Blocked single-label or invalid DNS hostname {host!r} (SSRF protection)."
+            )
+
+        if resolve_dns:
+            lookup = resolver or socket.getaddrinfo
+            try:
+                infos = lookup(host, effective_port, type=socket.SOCK_STREAM)
+            except OSError as exc:
+                raise urllib.error.URLError(f"DNS lookup failed for {host}: {exc}") from exc
+            if not infos:
+                raise urllib.error.URLError(f"DNS lookup returned no records for {host}")
+            approved: list[str] = []
+            for info in infos:
+                sockaddr = info[4]
+                if sockaddr:
+                    resolved_ip = sockaddr[0]
+                    _check_ip_safe(resolved_ip)
+                    if resolved_ip not in approved:
+                        approved.append(resolved_ip)
+            if not approved:
+                raise urllib.error.URLError(f"DNS lookup returned no usable socket addresses for {host}")
+            if pinned_ips is not None:
+                pinned_ips[(host, effective_port)] = approved
 
     return parsed
 
@@ -440,8 +576,152 @@ def is_waf_allowlisted_domain(hostname: str) -> bool:
     return any(host == dom or host.endswith("." + dom) for dom in WAF_403_ALLOWLIST_DOMAINS)
 
 
+class _PinnedHTTPConnection(http.client.HTTPConnection):
+    """HTTPConnection dialing strictly pre-validated `(ip, port)` endpoints (DNS-rebinding guard)."""
+
+    def __init__(
+        self,
+        host: str,
+        *args: Any,
+        pinned_ips: dict[tuple[str, int], list[str]] | None = None,
+        resolver: Callable[..., Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(host, *args, **kwargs)
+        self._pinned_ips = pinned_ips if pinned_ips is not None else {}
+        self._resolver = resolver
+        self.connected_ip: str | None = None
+
+    def _resolve_pinned_targets(self) -> list[str]:
+        norm_host = self.host.strip().lower().rstrip(".")
+        targets = self._pinned_ips.get((norm_host, self.port))
+        if targets:
+            return targets
+        try:
+            ip_obj = ipaddress.ip_address(norm_host)
+            canonical = str(ip_obj)
+            _check_ip_safe(canonical)
+            self._pinned_ips[(norm_host, self.port)] = [canonical]
+            return [canonical]
+        except ValueError:
+            pass
+        lookup = self._resolver or socket.getaddrinfo
+        infos = lookup(norm_host, self.port, type=socket.SOCK_STREAM)
+        if not infos:
+            raise OSError(f"DNS lookup returned no records for {norm_host}")
+        approved: list[str] = []
+        for info in infos:
+            sockaddr = info[4]
+            if sockaddr:
+                ip_str = sockaddr[0]
+                _check_ip_safe(ip_str)
+                if ip_str not in approved:
+                    approved.append(ip_str)
+        if not approved:
+            raise OSError(f"No approved IP addresses resolved for {norm_host}")
+        self._pinned_ips[(norm_host, self.port)] = approved
+        return approved
+
+    def connect(self) -> None:
+        approved_ips = self._resolve_pinned_targets()
+        last_err: OSError | None = None
+        connected_sock: socket.socket | None = None
+        for ip_addr in approved_ips:
+            _check_ip_safe(ip_addr)
+            try:
+                connected_sock = socket.create_connection(
+                    (ip_addr, self.port),
+                    self.timeout,
+                    self.source_address,
+                )
+                self.connected_ip = ip_addr
+                break
+            except OSError as exc:
+                last_err = exc
+        if connected_sock is None:
+            raise last_err or OSError(f"Failed connecting to pinned IPs for {self.host}:{self.port}")
+        self.sock = connected_sock
+        if getattr(self, "_tunnel_host", None):
+            self._tunnel()  # type: ignore[attr-defined]
+
+
+class _PinnedHTTPSConnection(_PinnedHTTPConnection, http.client.HTTPSConnection):
+    """HTTPSConnection combining pinned TCP socket routing with original-host TLS SNI/X.509 verification."""
+
+    def __init__(
+        self,
+        host: str,
+        *args: Any,
+        pinned_ips: dict[tuple[str, int], list[str]] | None = None,
+        resolver: Callable[..., Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        self._pinned_ips = pinned_ips if pinned_ips is not None else {}
+        self._resolver = resolver
+        self.connected_ip: str | None = None
+        self.tls_server_hostname: str | None = None
+        http.client.HTTPSConnection.__init__(self, host, *args, **kwargs)
+
+    def connect(self) -> None:
+        _PinnedHTTPConnection.connect(self)
+        tunnel_host = getattr(self, "_tunnel_host", None)
+        sni_host = (tunnel_host if tunnel_host else self.host).rstrip(".")
+        self.tls_server_hostname = sni_host
+        ssl_ctx = getattr(self, "_context", None) or ssl.create_default_context()
+        self.sock = ssl_ctx.wrap_socket(self.sock, server_hostname=sni_host)
+
+
+class PinnedHTTPHandler(urllib.request.HTTPHandler):
+    """HTTPHandler binding requests to SSRF-validated pinned IP addresses."""
+
+    def __init__(
+        self,
+        pinned_ips: dict[tuple[str, int], list[str]],
+        resolver: Callable[..., Any] | None = None,
+    ) -> None:
+        super().__init__()
+        self._pinned_ips = pinned_ips
+        self._resolver = resolver
+
+    def http_open(self, req: urllib.request.Request):  # type: ignore[override]
+        def _factory(host: str, **kwargs: Any) -> _PinnedHTTPConnection:
+            return _PinnedHTTPConnection(
+                host,
+                pinned_ips=self._pinned_ips,
+                resolver=self._resolver,
+                **kwargs,
+            )
+
+        return self.do_open(_factory, req)
+
+
+class PinnedHTTPSHandler(urllib.request.HTTPSHandler):
+    """HTTPSHandler binding requests to SSRF-validated pinned IP addresses while preserving SNI."""
+
+    def __init__(
+        self,
+        pinned_ips: dict[tuple[str, int], list[str]],
+        resolver: Callable[..., Any] | None = None,
+        context: ssl.SSLContext | None = None,
+    ) -> None:
+        super().__init__(context=context)
+        self._pinned_ips = pinned_ips
+        self._resolver = resolver
+
+    def https_open(self, req: urllib.request.Request):  # type: ignore[override]
+        def _factory(host: str, **kwargs: Any) -> _PinnedHTTPSConnection:
+            return _PinnedHTTPSConnection(
+                host,
+                pinned_ips=self._pinned_ips,
+                resolver=self._resolver,
+                **kwargs,
+            )
+
+        return self.do_open(_factory, req, context=self._context)  # type: ignore[attr-defined]
+
+
 class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
-    """Redirect handler enforcing HTTPS-only redirects, SSRF checks, and hop bounds."""
+    """Redirect handler enforcing HTTPS-only redirects, SSRF checks, DNS pinning, and hop bounds."""
 
     def __init__(
         self,
@@ -450,12 +730,14 @@ class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
         require_https: bool = True,
         resolve_dns: bool = False,
         resolver: Callable[..., Any] | None = None,
+        pinned_ips: dict[tuple[str, int], list[str]] | None = None,
     ) -> None:
         super().__init__()
         self.max_redirects = max_redirects
         self.require_https = require_https
         self.resolve_dns = resolve_dns
         self.resolver = resolver
+        self.pinned_ips = pinned_ips
         self.redirect_urls: list[str] = []
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
@@ -475,6 +757,7 @@ class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
             require_https=self.require_https,
             resolve_dns=self.resolve_dns,
             resolver=self.resolver,
+            pinned_ips=self.pinned_ips,
         )
         self.redirect_urls.append(resolved_new)
         return super().redirect_request(req, fp, code, msg, headers, resolved_new)
@@ -528,14 +811,16 @@ def check_url(
     sleep_fn: Callable[[float], None] = time.sleep,
     resolver: Callable[..., Any] | None = None,
 ) -> LinkCheckResult:
-    """Check a single external URL using HEAD->GET fallback, SSRF/HTTPS validation, and retry backoff."""
+    """Check a single external URL using HEAD->GET fallback, pinned SSRF/HTTPS validation, and retry backoff."""
     t0 = time.perf_counter()
+    pinned_ips: dict[tuple[str, int], list[str]] = {}
     try:
         parsed = validate_url_target(
             url,
             require_https=require_https,
             resolve_dns=resolve_dns,
             resolver=resolver,
+            pinned_ips=pinned_ips,
         )
     except SecurityValidationError as exc:
         return LinkCheckResult(
@@ -560,31 +845,9 @@ def check_url(
 
     request_url = _strip_fragment(url)
     orig_host = parsed.hostname or ""
-    allowlisted_waf = is_waf_allowlisted_domain(orig_host)
-
-    def _single_attempt(method: str, user_agent: str) -> tuple[int, str, list[str], bytes]:
-        redirect_handler = SafeRedirectHandler(
-            max_redirects=5,
-            require_https=require_https,
-            resolve_dns=resolve_dns,
-            resolver=resolver,
-        )
-        opener = (
-            opener_factory(redirect_handler)
-            if opener_factory is not None
-            else urllib.request.build_opener(redirect_handler)
-        )
-        headers = {"User-Agent": user_agent, "Accept": "text/html,application/xhtml+xml,*/*;q=0.8"}
-        if method == "GET":
-            headers["Range"] = f"bytes=0-{MAX_BODY_BYTES - 1}"
-        req = urllib.request.Request(request_url, headers=headers, method=method)
-        with opener.open(req, timeout=timeout) as resp:
-            status = getattr(resp, "status", None) or resp.getcode() or 200
-            final_u = resp.geturl() or request_url
-            snippet = resp.read(MAX_BODY_BYTES) if method == "GET" else b""
-            return int(status), final_u, list(redirect_handler.redirect_urls), snippet
 
     method = "HEAD"
+    use_range = True
     user_agent = DEFAULT_USER_AGENT
     last_code: int | str = "ERROR"
     last_error: str | None = None
@@ -592,10 +855,45 @@ def check_url(
     redirects: list[str] = []
     body_snippet = b""
 
+    def _single_attempt(cur_method: str, cur_ua: str, *, ranged: bool) -> tuple[int, str, list[str], bytes]:
+        nonlocal redirects, final_url
+        redirect_handler = SafeRedirectHandler(
+            max_redirects=5,
+            require_https=require_https,
+            resolve_dns=resolve_dns,
+            resolver=resolver,
+            pinned_ips=pinned_ips,
+        )
+        if opener_factory is not None:
+            opener = opener_factory(redirect_handler)
+        elif resolve_dns:
+            opener = urllib.request.build_opener(
+                PinnedHTTPHandler(pinned_ips, resolver=resolver),
+                PinnedHTTPSHandler(pinned_ips, resolver=resolver),
+                redirect_handler,
+            )
+        else:
+            opener = urllib.request.build_opener(redirect_handler)
+
+        headers = {"User-Agent": cur_ua, "Accept": "text/html,application/xhtml+xml,*/*;q=0.8"}
+        if cur_method == "GET" and ranged:
+            headers["Range"] = f"bytes=0-{MAX_BODY_BYTES - 1}"
+        req = urllib.request.Request(request_url, headers=headers, method=cur_method)
+        try:
+            with opener.open(req, timeout=timeout) as resp:
+                status = getattr(resp, "status", None) or resp.getcode() or 200
+                final_u = resp.geturl() or request_url
+                snippet = resp.read(MAX_BODY_BYTES) if cur_method == "GET" else b""
+                return int(status), final_u, list(redirect_handler.redirect_urls), snippet
+        finally:
+            redirects = list(redirect_handler.redirect_urls)
+            if redirects:
+                final_url = redirects[-1]
+
     attempt = 0
     while attempt <= max_retries:
         try:
-            code, final_url, redirects, body_snippet = _single_attempt(method, user_agent)
+            code, final_url, redirects, body_snippet = _single_attempt(method, user_agent, ranged=use_range)
             last_code = code
             last_error = None
             break
@@ -624,7 +922,12 @@ def check_url(
                 method = "GET"
                 continue
 
-            if code == 403 and allowlisted_waf and user_agent == DEFAULT_USER_AGENT:
+            if method == "GET" and use_range and code in RANGE_FALLBACK_CODES:
+                use_range = False
+                continue
+
+            cur_final_host = urllib.parse.urlsplit(final_url).hostname or orig_host
+            if code == 403 and is_waf_allowlisted_domain(cur_final_host) and user_agent == DEFAULT_USER_AGENT:
                 user_agent = BROWSER_FALLBACK_UA
                 method = "GET"
                 continue
@@ -648,6 +951,7 @@ def check_url(
                     status_code="BLOCKED",
                     ok=False,
                     method=method,
+                    redirect_count=len(redirects),
                     latency_ms=round((time.perf_counter() - t0) * 1000.0, 2),
                     error=str(reason),
                 )
@@ -664,13 +968,15 @@ def check_url(
     title = _extract_title(body_snippet)
     soft_404 = _is_soft_404_title(title)
     cross_domain, root_redirect = _compute_redirect_warnings(request_url, final_url)
+    final_host = urllib.parse.urlsplit(final_url).hostname or orig_host
+    final_allowlisted_waf = is_waf_allowlisted_domain(final_host)
 
     waf_used = False
     if isinstance(last_code, int) and 200 <= last_code < 300:
         ok = not soft_404
         if soft_404:
             last_error = f"Soft-404 detected in page title: {title!r}"
-    elif last_code == 403 and allowlisted_waf:
+    elif last_code == 403 and final_allowlisted_waf:
         ok = True
         waf_used = True
         last_error = None

@@ -352,3 +352,261 @@ def test_exit_codes_soft_404_and_json_report(tmp_path: Path, monkeypatch: pytest
 
     rc_warn = check_links_script.main(["--repo-root", str(tmp_path), "--warn-only"])
     assert rc_warn == 0
+
+
+@pytest.mark.parametrize(
+    "obfuscated_or_transition_url",
+    [
+        "https://localhost./admin",
+        "https://api.localhost/mcp",
+        "https://svc.internal/mcp",
+        "https://printer.home.arpa/ipp",
+        "https://intranet/secret",
+        "https://@example.com/mcp",
+        "https://user:secret@example.com/mcp",
+        "https://example.com:70000/mcp",
+        "https://example.com:80:80/mcp",
+        "https://public.example.com\\@127.0.0.1/mcp",
+        "https://127.1/internal-config",
+        "https://127.0.1/internal-config",
+        "https://2130706433/internal-config",
+        "https://0177.0.0.1/internal-config",
+        "https://127.0.0.01/internal-config",
+        "https://0x7f000001/internal-config",
+        "https://0x7f.0.0.1/internal-config",
+        "https://169.254.43518/latest/meta-data",
+        "https://[::127.0.0.1]/mcp",
+        "https://[64:ff9b::127.0.0.1]/mcp",
+        "https://[64:ff9b:1::127.0.0.1]/mcp",
+        "https://[::ffff:0:127.0.0.1]/mcp",
+        "https://[2002:7f00:0001::1]/mcp",
+        "https://[2001:0000:7f00:0001:0000:ffff:80ff:fffe]/mcp",
+        "https://[fe80::1%25eth0]/mcp",
+        "https://[::1%lo0]/mcp",
+    ],
+)
+def test_issue_24_ssrf_canonicalization_ipv4_forms_and_ipv6_transitions(
+    obfuscated_or_transition_url: str,
+) -> None:
+    """Issue #24: Block non-canonical IPv4 literals, IPv6 transitions, trailing dots, and port/userinfo tricks."""
+    with pytest.raises(SecurityValidationError):
+        validate_url_target(obfuscated_or_transition_url, require_https=True, resolve_dns=False)
+
+
+def test_issue_24_dns_pinned_https_connection_prevents_toctou_rebinding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Issue #24: Ensure TCP socket dials the pre-validated IP while preserving TLS SNI server_hostname."""
+    from lab_atlas.linkcheck import _PinnedHTTPSConnection
+
+    dns_calls = 0
+
+    def _rebind_resolver(host: str, port: int, type: int = 0):
+        nonlocal dns_calls
+        dns_calls += 1
+        # First lookup returns safe public IP; any second lookup would return 127.0.0.1 (rebind attack)
+        ip = "93.184.216.34" if dns_calls == 1 else "127.0.0.1"
+        return [(2, 1, 6, "", (ip, port))]
+
+    pinned_ips: dict[tuple[str, int], list[str]] = {}
+    validate_url_target(
+        "https://rebind.example.com/resource",
+        require_https=True,
+        resolve_dns=True,
+        resolver=_rebind_resolver,
+        pinned_ips=pinned_ips,
+    )
+    assert dns_calls == 1
+    assert pinned_ips[("rebind.example.com", 443)] == ["93.184.216.34"]
+
+    dialed_targets: list[tuple[str, int]] = []
+    sni_hosts: list[str | None] = []
+
+    class _DummyRawSock:
+        def close(self) -> None:
+            pass
+
+    class _DummyTlsSock:
+        def close(self) -> None:
+            pass
+
+    def _fake_create_connection(address: tuple[str, int], timeout=None, source_address=None):
+        dialed_targets.append(address)
+        return _DummyRawSock()
+
+    import socket as socket_mod
+    import ssl as ssl_mod
+
+    real_ctx = ssl_mod.create_default_context()
+    monkeypatch.setattr(socket_mod, "create_connection", _fake_create_connection)
+    monkeypatch.setattr(
+        real_ctx,
+        "wrap_socket",
+        lambda sock, server_hostname=None: (sni_hosts.append(server_hostname) or _DummyTlsSock()),
+    )
+    conn = _PinnedHTTPSConnection(
+        "rebind.example.com",
+        443,
+        pinned_ips=pinned_ips,
+        resolver=_rebind_resolver,
+        context=real_ctx,
+    )
+    conn.connect()
+
+    # Must NOT perform a second DNS lookup and must dial strictly 93.184.216.34 with SNI=rebind.example.com
+    assert dns_calls == 1
+    assert dialed_targets == [("93.184.216.34", 443)]
+    assert conn.connected_ip == "93.184.216.34"
+    assert sni_hosts == ["rebind.example.com"]
+    assert conn.tls_server_hostname == "rebind.example.com"
+
+
+def test_issue_29_cross_domain_redirect_waf_403_bypass_blocked() -> None:
+    """Issue #29: Cross-domain redirect from allowlisted vendor host to GitHub 403 must fail."""
+
+    class _RedirectToGitHub403Opener:
+        def open(self, req: urllib.request.Request, timeout: float = 10.0):
+            raise _make_http_error(
+                "https://github.com/vendor/removed-private-repo",
+                403,
+                "Forbidden",
+            )
+
+    res = check_url(
+        "https://www.hamiltoncompany.com/legacy-sdk-link",
+        opener_factory=lambda _rh: _RedirectToGitHub403Opener(),  # type: ignore[arg-type]
+        resolver=_public_dns_stub,
+        sleep_fn=lambda _s: None,
+    )
+    assert res.final_url == "https://github.com/vendor/removed-private-repo"
+    assert res.ok is False
+    assert res.waf_allowlisted is False
+
+
+def test_issue_29_http_416_range_not_satisfiable_retries_unranged_get() -> None:
+    """Issue #29: Retry GET without Range header when ranged GET returns 416 Range Not Satisfiable."""
+    seen_requests: list[tuple[str, str | None]] = []
+
+    class _StrictRangeOpener:
+        def open(self, req: urllib.request.Request, timeout: float = 10.0):
+            method = req.get_method()
+            range_hdr = req.get_header("Range")
+            seen_requests.append((method, range_hdr))
+            if method == "HEAD":
+                raise _make_http_error(req.full_url, 405, "Method Not Allowed")
+            if range_hdr is not None:
+                raise _make_http_error(req.full_url, 416, "Range Not Satisfiable")
+            return _SpyResponse(200, req.full_url, b"<html><title>Zero-Byte Friendly</title></html>")
+
+    res = check_url(
+        "https://example.com/strict-range-endpoint",
+        opener_factory=lambda _rh: _StrictRangeOpener(),  # type: ignore[arg-type]
+        resolver=_public_dns_stub,
+        sleep_fn=lambda _s: None,
+    )
+    assert res.ok is True
+    assert res.status_code == 200
+    assert seen_requests == [
+        ("HEAD", None),
+        ("GET", f"bytes=0-{MAX_BODY_BYTES - 1}"),
+        ("GET", None),
+    ]
+
+
+def test_issue_29_redirect_count_preserved_on_http_error_and_ssrf_block() -> None:
+    """Issue #29: Preserve redirect_handler.redirect_urls count when redirect chain ends in failure."""
+
+    def _build_404_after_hop_opener(rh: SafeRedirectHandler):
+        class _HopThen404Opener:
+            def open(self, req: urllib.request.Request, timeout: float = 10.0):
+                rh.redirect_request(
+                    req,
+                    None,
+                    302,
+                    "Found",
+                    {},
+                    "https://example.com/hop-1",
+                )
+                raise _make_http_error("https://example.com/hop-1", 404, "Not Found")
+
+        return _HopThen404Opener()
+
+    res_404 = check_url(
+        "https://example.com/start",
+        opener_factory=_build_404_after_hop_opener,  # type: ignore[arg-type]
+        resolver=_public_dns_stub,
+        sleep_fn=lambda _s: None,
+    )
+    assert res_404.ok is False
+    assert res_404.status_code == 404
+    assert res_404.redirect_count == 1
+    assert res_404.final_url == "https://example.com/hop-1"
+
+    def _build_ssrf_on_hop2_opener(rh: SafeRedirectHandler):
+        class _HopThenSsrfOpener:
+            def open(self, req: urllib.request.Request, timeout: float = 10.0):
+                next_req = rh.redirect_request(
+                    req,
+                    None,
+                    302,
+                    "Found",
+                    {},
+                    "https://example.com/hop-1",
+                )
+                rh.redirect_request(
+                    next_req,
+                    None,
+                    302,
+                    "Found",
+                    {},
+                    "https://127.0.0.1/internal",
+                )
+                return _SpyResponse(200, req.full_url, b"")
+
+        return _HopThenSsrfOpener()
+
+    res_ssrf = check_url(
+        "https://example.com/start",
+        opener_factory=_build_ssrf_on_hop2_opener,  # type: ignore[arg-type]
+        resolver=_public_dns_stub,
+        sleep_fn=lambda _s: None,
+    )
+    assert res_ssrf.ok is False
+    assert res_ssrf.status_code == "BLOCKED"
+    assert res_ssrf.redirect_count == 1
+    assert res_ssrf.final_url == "https://example.com/hop-1"
+
+
+def test_issue_29_markdown_unbracketed_prose_escaped_brackets_and_indented_fences() -> None:
+    """Issue #29: Ignore unbracketed `](`, escaped `\\[`, and list-indented tilde/backtick code fences."""
+    md = (
+        "Escaped bracket prose: \\[not a link\\](missing_file.md)\n"
+        "Half-escaped open bracket: \\[also not a link](also_missing.md)\n"
+        "Unmatched paren prose: array](index) and [Real](https://example.com/real) trailing](bogus)\n"
+        "- List item with indented tilde fence:\n"
+        "  ~~~markdown\n"
+        "  [Example](https://broken.invalid/in-tilde-fence)\n"
+        "  ~~~\n"
+        "- List item with indented backtick fence:\n"
+        "   ```python\n"
+        "   # [CodeComment](https://broken.invalid/in-backtick-fence)\n"
+        "   ```\n"
+        "Code-formatted label: [`MIT`](https://example.com/license)\n"
+        "Nested badge: [![CI](https://example.com/badge.svg)](https://example.com/builds)\n"
+    )
+    links = extract_links(md, source_file="README.md")
+    targets = [item.target for item in links]
+
+    assert "missing_file.md" not in targets
+    assert "also_missing.md" not in targets
+    assert "index" not in targets
+    assert "bogus" not in targets
+    assert "https://broken.invalid/in-tilde-fence" not in targets
+    assert "https://broken.invalid/in-backtick-fence" not in targets
+
+    assert targets == [
+        "https://example.com/real",
+        "https://example.com/license",
+        "https://example.com/badge.svg",
+        "https://example.com/builds",
+    ]

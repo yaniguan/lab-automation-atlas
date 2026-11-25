@@ -33,7 +33,7 @@ pytest
 Full architectural documentation, schema invariants, link-checker security controls, and sibling contracts are maintained in [`docs/ARCHITECTURE_AND_HISTORY.md`](docs/ARCHITECTURE_AND_HISTORY.md):
 
 - **Object**: Canonical semantic world map, SPDX license gate, and hardware-to-SDK-to-IR compatibility registry (`L5`) grounding platform, compiler, solver, procurement, and dataset selection across the Auto-Lab stack.
-- **Data**: `58` typed entries across `7` catalog categories stored in [`atlas.json`](atlas.json) (`additionalProperties: false` in [`schema/atlas.schema.json`](schema/atlas.schema.json)) and rendered deterministically into standardized 6-column Markdown tables in `README.md`.
+- **Data**: `59` typed entries across `7` catalog categories stored in [`atlas.json`](atlas.json) (`additionalProperties: false` in [`schema/atlas.schema.json`](schema/atlas.schema.json)) and rendered deterministically into standardized 6-column Markdown tables in `README.md`.
 - **Model**: Typed ontology + hardware/IR compatibility resolver (`lab_atlas/catalog.py`) paired with a concurrent, SSRF-hardened Markdown link auditor (`lab_atlas/linkcheck.py`, `scripts/check_links.py`); **no parametric model is trained in this repository**.
 - **Training**: Zero parametric training; continuously verified via offline `pytest` schema/parser tests and scheduled/PR GitHub Actions link-rot audits (`.github/workflows/links.yml`).
 - **History**: Initialized in `f2e2e83` (`2026-11-18`) and expanded with [`atlas.json`](atlas.json), [`schema/atlas.schema.json`](schema/atlas.schema.json), `lab-atlas` CLI, hardware-to-SDK-to-IR matrix, chemistry/procurement & `L4` bridges, and hardened concurrent link verification.
@@ -51,16 +51,20 @@ lab-automation-atlas/
 │   ├── __init__.py                       # Public Python API exports
 │   ├── catalog.py                        # Loader, stdlib schema validator, filters & YAML exporter
 │   ├── cli.py                            # `lab-atlas` CLI (list, inspect, compatibility, validate, ...)
-│   ├── linkcheck.py                      # Balanced-paren parser, SSRF/HTTPS guard & ThreadPool auditor
+│   ├── linkcheck.py                      # Balanced-paren parser, pinned SSRF/HTTPS guard & ThreadPool auditor
 │   ├── render.py                         # Deterministic Markdown table & compatibility matrix renderer
+│   ├── spdx.py                           # SPDX 2.3/3.0 expression parser & default-deny license lattice
 │   └── resources/                        # Packaged copies of atlas.json and atlas.schema.json
+├── lean/
+│   └── LabAtlasLean.lean                 # Lean 4.36.0 license lattice, lineage taint & MCP envelope proofs
 ├── schema/
 │   └── atlas.schema.json                 # Draft 2020-12 JSON Schema (additionalProperties: false)
 ├── scripts/
 │   ├── check_links.py                    # Concurrent Markdown URL & local-anchor auditor CLI
 │   └── sync_catalog.py                   # Validates atlas.json and syncs README.md & package resources
 ├── tests/                                # Offline pytest suite (link parser, SSRF, catalog, CLI)
-├── atlas.json                            # Canonical 58-entry machine-readable catalog
+├── atlas.json                            # Canonical 59-entry machine-readable catalog
+├── autolab_wire.py                       # Auto-Lab 15-repo L5 wire node (autolab-wire/v1)
 ├── LICENSE                               # MIT License
 ├── pyproject.toml                        # Zero-dependency package & `lab-atlas` console script
 └── README.md                             # Synchronized 7-section ecosystem map & compatibility matrix
@@ -83,6 +87,7 @@ Complete internal navigation map across the 7-layer Auto-Lab Brain/Body stack an
 | **lab-automation-atlas** (`L5`) | Machine-readable semantic map, SPDX license registry, and link auditor for automated-lab ecosystems. | `active` | [`MIT`](https://github.com/yaniguan/lab-automation-atlas/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/lab-automation-atlas) |
 | **lab-rehearsal** (`L4`) | Episodic recall and 96-well digital-twin dry-run safety gate blocking liquid-handling fault classes. | `active` | [`MIT`](https://github.com/yaniguan/lab-rehearsal/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/lab-rehearsal) |
 | **lab-verify** (`L4`) | Default-deny 4-layer SQL, Lean 4, and symbolic protocol verification gate. | `active` | [`MIT`](https://github.com/yaniguan/lab-verify/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/lab-verify) |
+| **lab-attrib** (`L4`) | Post-execution causal blame gate, NNLS XRD precursor deconvolution, EVOI orthogonal routing, and SHA-256 certified memory ledger. | `active` | [`MIT`](https://github.com/yaniguan/lab-attrib/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/lab-attrib) |
 | **WignerFlow** (`L4`) | 50-fs integrator-free equivariant molecular dynamics and physics surrogate gate for YLM. | `active` | [`MIT`](https://github.com/yaniguan/WignerFlow/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/WignerFlow), [Studio](https://yaniguan.github.io/WignerFlow/) |
 | **labbench-posttrain** (`L3`) | Verifiable RL post-training SDK (SFT, DPO/MPO/TROPD, PPO/GRPO/GDPO+DAPO) with anti-reward-hack gates. | `active` | [`MIT`](https://github.com/yaniguan/labbench-posttrain/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/labbench-posttrain) |
 | **twinstep** (`L3`) | Deterministic seeded-error protocol twin generator and topological step-ordering benchmark. | `active` | [`MIT`](https://github.com/yaniguan/twinstep/blob/main/LICENSE) | yes | [GitHub](https://github.com/yaniguan/twinstep) |
@@ -170,7 +175,7 @@ Pointer bridge to embodied robotics/digital-twin benchmarks in `lab-rehearsal` a
 | Name | Role / Type | Status | License | Commercial Use | Links |
 |---|---|---|---|---|---|
 | LabUtopia | High-fidelity Isaac-based lab scenes and hierarchical embodied agent benchmark (curated in L4 lab-rehearsal). Tasks: `embodied_manipulation`, `hierarchical_planning`. | `active` | [`MIT`](https://github.com/Rui-li023/LabUtopia/blob/main/LICENSE) | yes | [paper](https://arxiv.org/abs/2505.22634), [GitHub](https://github.com/Rui-li023/LabUtopia), [lab-rehearsal](https://github.com/yaniguan/lab-rehearsal) |
-| AutoBio | MuJoCo biology lab manipulation simulation for pipetting, centrifuges, and thermal cyclers (curated in L4 lab-rehearsal). Tasks: `pipetting_sim`, `instrument_manipulation`. | `active` | [`NOASSERTION`](https://github.com/autobio-bench/AutoBio) | no | [paper](https://arxiv.org/abs/2505.14030), [GitHub](https://github.com/autobio-bench/AutoBio), [lab-rehearsal](https://github.com/yaniguan/lab-rehearsal) |
+| AutoBio | MuJoCo biology lab manipulation simulation for pipetting, centrifuges, and thermal cyclers (curated in L4 lab-rehearsal). Tasks: `pipetting_sim`, `instrument_manipulation`. **Contamination guard**: Held-out embodied lab manipulation benchmark (NOASSERTION license); exclude evaluation scenes from L3 training corpora. | `active` | [`NOASSERTION`](https://github.com/autobio-bench/AutoBio) | no | [paper](https://arxiv.org/abs/2505.14030), [GitHub](https://github.com/autobio-bench/AutoBio), [lab-rehearsal](https://github.com/yaniguan/lab-rehearsal) |
 | MATTERIX | Multiscale digital twin combining robotic manipulation, liquid/powder handling, and reaction kinetics (curated in L4 lab-rehearsal). Tasks: `digital_twin`, `chemistry_simulation`. | `active` | [`Apache-2.0`](https://arxiv.org/abs/2601.13232) | yes | [paper](https://arxiv.org/abs/2601.13232), [lab-rehearsal](https://github.com/yaniguan/lab-rehearsal) |
 | Lean 4 & miniF2F | Interactive theorem prover kernel and formal benchmark backing L4 lab-verify and L6 YLM LabLean proofs. Tasks: `formal_verification`, `theorem_proving`. | `active` | [`Apache-2.0`](https://github.com/leanprover/lean4/blob/master/LICENSE) | yes | [Lean 4](https://github.com/leanprover/lean4), [miniF2F](https://github.com/facebookresearch/miniF2F), [lab-verify](https://github.com/yaniguan/lab-verify) |
 | Spider 2.0 | Enterprise database-grounded text-to-SQL benchmark cross-indexed with L4 lab-verify 4-layer SQL gate. Tasks: `text_to_sql`, `execution_verification`. **Contamination guard**: Held-out SQL benchmark cross-referenced with lab-verify. | `active` | [`MIT`](https://github.com/xlang-ai/Spider2/blob/main/LICENSE) | yes | [site](https://spider2-sql.github.io/), [GitHub](https://github.com/xlang-ai/Spider2), [lab-verify](https://github.com/yaniguan/lab-verify) |
@@ -201,6 +206,13 @@ Every dataset and API entry in [`atlas.json`](atlas.json) declares `allowed_purp
 ## How the links are checked
 
 `scripts/check_links.py` parses inline links (including balanced nested parentheses and link titles), reference links, autolinks, and relative local paths/anchors across `README.md` and `docs/*.md`. It checks external URLs concurrently over HTTPS with SSRF protection, `HEAD -> GET` fallback, bounded exponential retry on `429`/`502`/`503`/`504`, soft-404/root-redirect warnings, and an explicit vendor-only WAF `403` allowlist (`github.com`, `arxiv.org`, `huggingface.co`, and `pypi.org` are never `403`-allowlisted). Non-zero exit codes fail CI whenever a broken link is detected.
+
+## 15-Repository Auto-Lab Wire Contract (autolab-wire/v1)
+
+[`autolab_wire.py`](autolab_wire.py) (`REPO_ID = "lab-automation-atlas"`, `LAYER = "L5"`) exposes `process_packet(packet: dict) -> dict` for the 15-repository closed-loop Auto-Lab wire:
+
+- **Upstream / Downstream**: Consumes candidate goals and datasets after `L2` (`assayfold`, `lab-ears`) and `L6` (`lab-ask-why`, `lab-decide`), grounds hardware/SDK capabilities (`platform_grounding`) for `L5` (`buy-or-make`, `labshift`), `L4` pre-execution gates (`lab-rehearsal`, `lab-verify`), `L1`/`L0` execution (`stepbot`, `lab-hands`, `lab-feet`), `L4` post-execution causal blame (`lab-attrib`), and `L3` post-training (`twinstep`, `labfill`, `labbench-posttrain`).
+- **Safety & License Gate**: Enforces `LabAtlasLean` `eval_only_blocked_from_training` and HTTPS-only public-host SSRF validation, halting unsafe URLs or restricted training licenses (`eval_only`, `CC-BY-NC-2.0`, `non_commercial`) with `halt_reason = "L5_ATLAS_LICENSE_OR_URL_BLOCK"`.
 
 ## License
 
