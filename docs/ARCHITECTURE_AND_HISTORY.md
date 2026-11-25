@@ -7,7 +7,7 @@
 ## 1. Object
 
 ### Problem Statement
-Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilton`, `Tecan`, `Automata`, `Biosero`), cloud foundries (`Emerald Cloud Lab`, `Strateos`, `Ginkgo Bioworks`), intermediate representations and SDKs (`Opentrons Python API v2`, `PyLabRobot`, `Autoprotocol`, `LabOP`, `XDL`, `SiLA 2`), campaign/scheduling solvers (`Atlas`, `WEI`, `Bluesky`, `OR-Tools`), chemical synthesis/procurement databases (`ORD`, `USPTO`, `AiZynthFinder`, `RDKit`, `PubChem PUG REST`, `eLabFTW`), and protocol benchmarks (`WLP`, `BioPlanner`, `BioProBench`, `LAB-Bench`). Without a machine-readable registry carrying verified SPDX licenses, maintenance statuses, hardware compatibility, and benchmark-contamination flags, autonomous planning agents risk selecting archived/incompatible stacks or leaking `eval_only` benchmarks into training pipelines.
+Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilton`, `Tecan`, `Automata`, `Biosero`), cloud foundries (`Emerald Cloud Lab`, `Strateos`, `Ginkgo Bioworks`), intermediate representations and SDKs (`Opentrons Python API v2`, `PyLabRobot`, `Autoprotocol`, `LabOP`, `XDL`, `SiLA 2`), campaign/scheduling solvers (`Atlas`, `WEI`, `Bluesky`, `OR-Tools`), chemical synthesis/procurement databases (`ORD`, `USPTO`, `AiZynthFinder`, `RDKit`, `PubChem PUG REST`, `eLabFTW`), and multimodal wet-lab, self-driving formulation, spectroscopy, crystallography, acoustic, and embodied-manipulation datasets/benchmarks (`WLP`, `BioPlanner`, `BioProBench`, `LAB-Bench`, `FineBio`, `ChemBench`, `BixBench`, `MassSpecGym`, `MSD`, `AqSolDB`, `CALiSol-23`, `COD/ROD`, `OMat24`, `DCASE Task 2`, `DROID`). Without a machine-readable registry carrying verified SPDX licenses, maintenance statuses, hardware compatibility, analytical modalities, and benchmark-contamination flags, autonomous planning agents risk selecting archived/incompatible stacks or leaking `eval_only` benchmarks into training pipelines.
 
 `lab-automation-atlas` is the **machine-readable semantic world map, SPDX license registry, and automated link auditor** for Layer `L5` of Auto-Lab.
 
@@ -22,7 +22,7 @@ Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilto
 ## 2. Data
 
 ### Canonical Catalog (`atlas.json` & `schema/atlas.schema.json`)
-All `59` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
+All `70` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
 
 | Category ID | Section Title | Entries | Key Governance Fields |
 |---|---|---:|---|
@@ -31,7 +31,7 @@ All `59` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020
 | `cloud_lab` | Cloud labs and automated foundries | 4 | `maintenance_status` (`Strateos` flagged `commercial_restructured`) |
 | `software` | Open-source lab automation software | 12 | `spdx_license`, `osi_approved` (non-OSI flagged), `maintenance_status` (`Aquarium` `archived`, `Autoprotocol` & `XDL generation` `legacy`) |
 | `chemistry_and_procurement` | Chemical synthesis, reaction databases, and procurement | 6 | `ORD`, `USPTO`, `AiZynthFinder`, `RDKit`, `PubChem PUG REST`, `eLabFTW` |
-| `dataset` | Open protocol sources and datasets | 6 | `spdx_license`, `commercial_use_ok`, `allowed_purposes`, `contamination_warning`, `huggingface_id`, `doi`, `record_count` |
+| `dataset` | Open protocol sources and datasets | 17 | `spdx_license`, `commercial_use_ok`, `allowed_purposes`, `contamination_warning`, `analytical_modalities`, `huggingface_id`, `doi`, `record_count` |
 | `simulation_and_verification` | Embodied simulation & formal verification (`L4` cross-refs) | 5 | Cross-references to `lab-rehearsal` and `lab-verify` |
 
 ---
@@ -67,13 +67,15 @@ All `59` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020
 |---|---|---|---|---|
 | `f2e2e83` | `2026-11-18` | Yani Guan | `main` | Initial commit: 5-section Markdown pointer map (`30` entries), sequential `scripts/check_links.py`, weekly `links.yml`, and `MIT` license. |
 | `0.2.0` | `2026-11-23` | Yani Guan | `fix/resolve-audit-issues` | Resolved audit issues `#1..#22`: published 58-entry `atlas.json` + Draft 2020-12 `schema/atlas.schema.json`, packaged `lab-atlas` CLI, added SPDX/OSI/commercial/contamination metadata, hardware-to-SDK-to-IR compatibility matrix, chemistry & `L4` cross-references, SSRF-safe concurrent balanced-paren link checker with JSON reporting, hardened CI, and offline `pytest` suite. |
+| `cab4852` | `2026-11-25` | Yani Guan | `fix/phase2-audit-and-wire` | Resolved Phase-2 audit issues `#24..#29`: added `LabAtlasLean` SPDX 2.3/3.0 bounded lattice + lineage taint proofs, stdlib compound SPDX AST parser (`lab_atlas/spdx.py`), typed `hardware_capabilities` & `analytical_modalities`, pinned-IP SSRF redirect validation, and dynamic `autolab_wire.py` (`autolab-wire/v1`) node. |
+| `0.3.0` | `2026-11-25` | Yani Guan | `feat/open-datasets-2026` | Expanded `dataset` registry from `6` to `17` verified entries (`70` total) covering 2024-2026 open wet-lab atomic actions (`FineBio`), chemistry/bio benchmarks (`ChemBench`, `BixBench`), MS/MS & multimodal NMR/FTIR spectroscopy (`MassSpecGym`, `MSD`), solubility & electrolyte formulation (`AqSolDB`, `CALiSol-23`), open XRD/Raman crystallography (`COD/ROD`, `OMat24`), machine audio (`DCASE Task 2`), and robot manipulation (`DROID`). |
 
 ---
 
 ## 6. Unique Properties
 
 1. **Single Source of Truth (`atlas.json` <-> `README.md`)**: Eliminates drift between programmatic JSON/YAML agent queries and human-readable Markdown tables.
-2. **SPDX & Benchmark-Contamination Hygiene**: Aligns dataset licensing directly with `assayfold` while explicitly guarding `LAB-Bench`, `BioProBench`, and `BioPlanner` against training contamination.
+2. **SPDX & Benchmark-Contamination Hygiene**: Aligns dataset licensing directly with `assayfold` and `LabAtlasLean` while explicitly guarding `LAB-Bench`, `BixBench`, `ChemBench`, `FineBio`, `BioProBench`, and `BioPlanner` against training contamination.
 3. **Zero-Dependency, Security-Hardened Link Auditing**: Combines balanced-parenthesis Markdown parsing, local heading-anchor verification, SSRF/downgrade redirect blocking, per-host concurrency limits, and explicit WAF `403` allowlisting in pure standard-library Python.
 
 ---
