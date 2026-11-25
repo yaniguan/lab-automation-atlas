@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "atlas_name": "lab-automation-atlas",
-  "last_verified": "2026-11-24",
+  "last_verified": "2026-11-25",
   "categories": [
     {
       "id": "autolab_sibling",
@@ -31,7 +31,7 @@
     {
       "id": "dataset",
       "title": "Open protocol sources and datasets",
-      "description": "Wet-lab protocol repositories and evaluation benchmarks with `assayfold`-harmonized SPDX licenses, commercial-use gates, and benchmark-contamination guards."
+      "description": "Wet-lab protocol, self-driving formulation, spectroscopy, crystallography, acoustic, and embodied-manipulation datasets and benchmarks with `assayfold`-harmonized SPDX licenses, commercial-use gates, and benchmark-contamination guards."
     },
     {
       "id": "simulation_and_verification",
@@ -2472,6 +2472,553 @@
       ],
       "record_count": "1,967 rows across 8 subsets (108 ProtocolQA)",
       "last_checked": "2026-11-18"
+    },
+    {
+      "id": "finebio",
+      "name": "FineBio",
+      "category": "dataset",
+      "role": "Multi-view egocentric and third-person video dataset of wet-lab biological experiments with hierarchical atomic-action, object, and step annotations (CVPR 2024 / IJCV 2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "LicenseRef-FineBio-NonCommercial",
+      "osi_approved": false,
+      "license_evidence": "https://github.com/aistairc/FineBio/blob/main/FineBio_License_Agreement.pdf",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2402.00293"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/aistairc/FineBio"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "FineBio Action TXT",
+        "COCO Object JSON"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "optical_imaging"
+      ],
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "no_bulk_scraping_per_article",
+      "contamination_warning": "Signed non-commercial research license agreement required for video/annotation access; exclude FineBio splits from autonomous training corpora.",
+      "huggingface_id": null,
+      "doi": "10.1007/s11263-025-02523-2",
+      "tasks": [
+        "atomic_action_detection",
+        "step_segmentation",
+        "manipulated_object_detection"
+      ],
+      "record_count": "32 participants across 7 molecular biology protocols (egocentric + 5 third-person cameras)",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "chembench",
+      "name": "ChemBench",
+      "category": "dataset",
+      "role": "Automated chemistry, analytical spectroscopy, materials, and lab-safety reasoning benchmark suite (Nature Chemistry 2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/lamalab-org/chembench/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2404.01475"
+        },
+        {
+          "label": "docs",
+          "url": "https://lamalab-org.github.io/chembench/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/lamalab-org/chembench"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/jablonkagroup/ChemBench"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "BIG-bench JSON",
+        "SMILES"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "NMR",
+        "FTIR",
+        "LC-MS",
+        "UV-Vis",
+        "XRD"
+      ],
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Contains benchmark canary strings and strict evaluation-only notice; never ingest ChemBench splits into L3 post-training or pretraining.",
+      "huggingface_id": "jablonkagroup/ChemBench",
+      "doi": "10.48550/arXiv.2404.01475",
+      "tasks": [
+        "chemistry_qa",
+        "chemical_safety",
+        "spectrum_reasoning",
+        "stoichiometry"
+      ],
+      "record_count": "2,700+ expert-curated chemistry and materials question-answer items",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "bixbench",
+      "name": "BixBench",
+      "category": "dataset",
+      "role": "FutureHouse agentic computational biology and bioinformatics evaluation suite over real-world research analysis capsules (2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/Future-House/BixBench/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2503.00096"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Future-House/BixBench"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/futurehouse/BixBench"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "Jupyter Capsule",
+        "Python/R/Bash"
+      ],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Held-out agentic bioinformatics benchmark (companion to LAB-Bench); strictly eval_only — exclude all capsules and questions from L3 training.",
+      "huggingface_id": "futurehouse/BixBench",
+      "doi": "10.48550/arXiv.2503.00096",
+      "tasks": [
+        "agentic_bioinformatics",
+        "hypothesis_validation",
+        "code_execution_qa"
+      ],
+      "record_count": "205 multi-step questions derived from 60 real-world analysis capsules",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "massspecgym",
+      "name": "MassSpecGym",
+      "category": "dataset",
+      "role": "Tandem mass spectrometry (MS/MS) molecular discovery, retrieval, and de novo structure generation benchmark with Murcko-Histamine splits (NeurIPS 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/pluskal-lab/MassSpecGym/blob/main/LICENCE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2410.23326"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/pluskal-lab/MassSpecGym"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/roman-bushuiev/MassSpecGym"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "MGF",
+        "MZML",
+        "SMILES"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "LC-MS"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Preserve Murcko-Histamine scaffold-disjoint evaluation splits; never fit models on held-out test MS/MS spectra.",
+      "huggingface_id": "roman-bushuiev/MassSpecGym",
+      "doi": "10.48550/arXiv.2410.23326",
+      "tasks": [
+        "de_novo_molecule_generation",
+        "molecule_retrieval",
+        "spectrum_simulation"
+      ],
+      "record_count": "231,000+ curated MS/MS spectra across ~29,000 unique molecules",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "multimodal-spectroscopic-dataset",
+      "name": "Multimodal Spectroscopic Dataset (MSD)",
+      "category": "dataset",
+      "role": "Aligned 1H-NMR, 13C-NMR, HSQC-NMR, FTIR, and positive/negative MS/MS molecular structure elucidation corpus from IBM rxn4chemistry (NeurIPS 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CDLA-Sharing-1.0",
+      "osi_approved": false,
+      "license_evidence": "https://spdx.org/licenses/CDLA-Sharing-1.0.html",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2407.17492"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/rxn4chemistry/multimodal-spectroscopic-dataset"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "SMILES",
+        "Spectra Parquet/CSV"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "NMR",
+        "FTIR",
+        "LC-MS"
+      ],
+      "allowed_purposes": [
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.5281/zenodo.11611178",
+      "tasks": [
+        "structure_elucidation",
+        "forward_spectrum_prediction",
+        "functional_group_identification"
+      ],
+      "record_count": "790,000 reaction-derived molecules with aligned NMR, FTIR, and MS/MS spectra",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "aqsoldb",
+      "name": "AqSolDB",
+      "category": "dataset",
+      "role": "Curated experimental aqueous solubility reference set and RDKit 2D descriptor corpus grounding self-driving lab formulation and lab-decide calibration",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/mcsorkun/AqSolDB"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/maomlab/AqSolDB"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CSV",
+        "SMILES",
+        "InChI"
+      ],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": "maomlab/AqSolDB",
+      "doi": "10.1038/s41597-019-0151-1",
+      "tasks": [
+        "solubility_prediction",
+        "formulation_screening",
+        "uncertainty_calibration"
+      ],
+      "record_count": "9,982 unique compounds standardized across 9 experimental solubility datasets",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "calisol-23",
+      "name": "CALiSol-23",
+      "category": "dataset",
+      "role": "Experimental non-aqueous Li-ion electrolyte ionic conductivity atlas across lithium salts and solvents for autonomous battery formulation (Scientific Data 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Pele0599/CALiSol-23"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CSV",
+        "SMILES"
+      ],
+      "has_simulator": null,
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.1038/s41597-024-03575-8",
+      "tasks": [
+        "electrolyte_conductivity",
+        "bayesian_optimization",
+        "formulation_design"
+      ],
+      "record_count": "13,825 experimental ionic conductivity measurements (38 solvents, 14 lithium salts)",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "crystallography-open-database",
+      "name": "Crystallography & Raman Open Databases (COD / ROD)",
+      "category": "dataset",
+      "role": "Public-domain peer-reviewed CIF crystal structures and companion Raman spectra grounding XRD phase identification and lab-attrib NNLS deconvolution",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC0-1.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "COD",
+          "url": "https://www.crystallography.net/cod/"
+        },
+        {
+          "label": "ROD",
+          "url": "https://solsa.crystallography.net/rod/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CIF",
+        "JCAMP-DX"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "XRD",
+        "Raman"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only",
+        "tool_integration"
+      ],
+      "scraping_policy": "public_api_rate_limited",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.1107/S0021889809016690",
+      "tasks": [
+        "phase_identification",
+        "xrd_deconvolution",
+        "raman_matching",
+        "crystal_structure_lookup"
+      ],
+      "record_count": "520,000+ peer-reviewed CIF crystal structures (COD) and companion CC0 Raman spectra (ROD)",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "omat24",
+      "name": "Open Materials 2024 (OMat24)",
+      "category": "dataset",
+      "role": "Meta FAIR large-scale non-equilibrium inorganic crystal structure, DFT energy, force, and stress corpus for autonomous solid-state discovery (2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://huggingface.co/datasets/facebook/OMAT24",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2410.12771"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/facebookresearch/fairchem"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/facebook/OMAT24"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "ASE LMDB",
+        "CIF",
+        "EXTXYZ"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "XRD"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": "facebook/OMAT24",
+      "doi": "10.48550/arXiv.2410.12771",
+      "tasks": [
+        "interatomic_potentials",
+        "structure_relaxation",
+        "materials_discovery"
+      ],
+      "record_count": "118M+ DFT single-point inorganic crystal structure calculations",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "dcase-task2-asd",
+      "name": "DCASE Task 2 Machine Audio (2024-2026)",
+      "category": "dataset",
+      "role": "First-shot and noise-aware unsupervised anomalous sound detection audio benchmark across industrial and robotic mechanisms grounding L2 lab-ears",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-NC-SA-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "commercial_use_ok": false,
+      "links": [
+        {
+          "label": "DCASE 2024",
+          "url": "https://dcase.community/challenge2024/task-first-shot-unsupervised-anomalous-sound-detection-for-machine-condition-monitoring"
+        },
+        {
+          "label": "DCASE 2025",
+          "url": "https://dcase.community/challenge2025/task-first-shot-unsupervised-anomalous-sound-detection-for-machine-condition-monitoring"
+        },
+        {
+          "label": "DCASE 2026",
+          "url": "https://dcase.community/challenge2026/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/nttcslab/dcase2023_task2_baseline_ae"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "WAV (16 kHz)"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "acoustic_monitoring"
+      ],
+      "allowed_purposes": [
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Non-commercial CC-BY-NC-SA-4.0 audio corpus; block from commercial training and isolate challenge evaluation clips from autoencoder fitting.",
+      "huggingface_id": null,
+      "doi": "10.5281/zenodo.10902294",
+      "tasks": [
+        "anomalous_sound_detection",
+        "machine_condition_monitoring",
+        "domain_shift_audio"
+      ],
+      "record_count": "16+ machine types (RoboticArm, 3DPrinter, Gearbox, Valve, Pump, Fan, Bearing, Slide rail)",
+      "last_checked": "2026-11-25"
+    },
+    {
+      "id": "droid",
+      "name": "DROID",
+      "category": "dataset",
+      "role": "Large-scale in-the-wild 7-DoF robot manipulation trajectory dataset with calibrated stereo wrist and exterior RGB-D streams grounding L1 lab-hands (RSS 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://droid-dataset.github.io/"
+        },
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2403.12945"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/droid-dataset/droid_policy_learning"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/cadene/droid"
+        }
+      ],
+      "supported_hardware": [
+        "Franka Emika Panda 7-DoF Arm"
+      ],
+      "protocol_formats": [
+        "RLDS",
+        "LeRobot Parquet",
+        "HDF5"
+      ],
+      "has_simulator": false,
+      "analytical_modalities": [
+        "optical_imaging"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": "cadene/droid",
+      "doi": "10.48550/arXiv.2403.12945",
+      "tasks": [
+        "visuomotor_policy_learning",
+        "embodied_manipulation",
+        "imitation_learning"
+      ],
+      "record_count": "76,000 demonstration trajectories (350 hours across 564 scenes and 86 tasks)",
+      "last_checked": "2026-11-25"
     },
     {
       "id": "labutopia",
