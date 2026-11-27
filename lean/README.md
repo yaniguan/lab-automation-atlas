@@ -1,6 +1,6 @@
 # LabAtlasLean (Lean 4.36.0 License Lattice, Lineage Taint & Typed Lean-MCP Guards)
 
-`LabAtlasLean` provides machine-checked L5 ecosystem governance, SPDX join-semilattice / lineage-contamination propagation, and typed hardware-MCP capability invariants for `lab-automation-atlas` in Lean 4 (`v4.36.0`), with zero `sorry` and zero custom `axiom` declarations.
+`LabAtlasLean` provides machine-checked L5 ecosystem governance, SPDX join-semilattice / lineage-contamination propagation, and typed hardware-MCP capability invariants for `lab-automation-atlas` in Lean 4 (`v4.36.0`), with zero `sorry` and **no custom axioms** (every theorem verified via `#print axioms` to depend only on standard Lean kernel axioms `propext`, `Classical.choice`, and `Quot.sound`).
 
 ## Covered Invariants and Theorems
 
@@ -19,9 +19,11 @@
 
 ## Build and Verify
 
-See [lakefile.toml](lakefile.toml) and [lean-toolchain](lean-toolchain):
+See [lakefile.toml](lakefile.toml), [lean-toolchain](lean-toolchain), and [`../scripts/verify_lean_parity.py`](../scripts/verify_lean_parity.py):
 
 ```bash
 cd lean
 lake build
+cd ..
+python scripts/verify_lean_parity.py
 ```

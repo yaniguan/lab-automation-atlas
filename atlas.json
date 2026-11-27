@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "atlas_name": "lab-automation-atlas",
-  "last_verified": "2026-11-25",
+  "last_verified": "2026-11-27",
   "categories": [
     {
       "id": "autolab_sibling",
@@ -1994,6 +1994,105 @@
       "last_checked": "2026-11-18"
     },
     {
+      "id": "pyjobshop",
+      "name": "PyJobShop",
+      "category": "software",
+      "role": "Constraint-programming scheduling library wrapping Google OR-Tools CP-SAT and CP Optimizer for resource-constrained multi-mode job-shop and workcell scheduling",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/PyJobShop/PyJobShop/blob/main/LICENSE.md",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "docs",
+          "url": "https://pyjobshop.org/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/PyJobShop/PyJobShop"
+        },
+        {
+          "label": "PyPI",
+          "url": "https://pypi.org/project/pyjobshop/"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "PyJobShop Model",
+        "CP-SAT Model"
+      ],
+      "has_simulator": false,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [
+        "job_shop_scheduling",
+        "cp_sat_optimization",
+        "workcell_scheduling"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "lerobot",
+      "name": "HuggingFace LeRobot",
+      "category": "software",
+      "role": "Open-source embodied manipulation stack, visuomotor policy library (ACT, Diffusion Policy), and standardized Apache Parquet + MP4 trajectory format grounding L1 lab-hands",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "Apache-2.0",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/huggingface/lerobot/blob/main/LICENSE",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/huggingface/lerobot"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/lerobot"
+        }
+      ],
+      "supported_hardware": [
+        "ROS2 Workcells",
+        "Modular SDL Instruments"
+      ],
+      "protocol_formats": [
+        "LeRobot Parquet",
+        "MP4 RGB-D Stream"
+      ],
+      "has_simulator": true,
+      "analytical_modalities": [
+        "optical_imaging"
+      ],
+      "allowed_purposes": [
+        "tool_integration",
+        "train_commercial",
+        "train_academic"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": null,
+      "tasks": [
+        "visuomotor_policy_learning",
+        "embodied_manipulation",
+        "imitation_learning"
+      ],
+      "record_count": null,
+      "last_checked": "2026-11-27"
+    },
+    {
       "id": "open-reaction-database",
       "name": "Open Reaction Database (ORD)",
       "category": "chemistry_and_procurement",
@@ -3019,6 +3118,602 @@
       ],
       "record_count": "76,000 demonstration trajectories (350 hours across 564 scenes and 86 tasks)",
       "last_checked": "2026-11-25"
+    },
+    {
+      "id": "bigsoldb-2",
+      "name": "BigSolDB 2.0",
+      "category": "dataset",
+      "role": "Multi-solvent temperature-dependent organic compound experimental solubility dataset across organic solvents and water (Scientific Data 2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://zenodo.org/records/15094979",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "DOI",
+          "url": "https://doi.org/10.1038/s41597-025-05559-8"
+        },
+        {
+          "label": "Zenodo",
+          "url": "https://zenodo.org/records/15094979"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/levakrasnovs/BigSolDBv2.0"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CSV",
+        "SMILES",
+        "InChI"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.1038/s41597-025-05559-8",
+      "tasks": [
+        "solubility_prediction",
+        "solvent_selection",
+        "temperature_extrapolation"
+      ],
+      "record_count": "~125,000 experimental multi-solvent solubility measurements across 243-425 K",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "bh-hte-ood",
+      "name": "Buchwald-Hartwig HTE OOD Dataset (Schwaller Group)",
+      "category": "dataset",
+      "role": "Curated Buchwald-Hartwig Pd-catalyzed C-N cross-coupling high-throughput experimentation (HTE) out-of-distribution generalization benchmark (Nature Computational Science 2026)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "DOI",
+          "url": "https://doi.org/10.1038/s43588-026-01017-6"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/schwallergroup/bh-hte-ood"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "CSV",
+        "Reaction SMILES"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "LC-MS",
+        "UV-Vis"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Preserve out-of-distribution (OOD) substrate/ligand evaluation splits when benchmarking yield generalization.",
+      "huggingface_id": null,
+      "doi": "10.1038/s43588-026-01017-6",
+      "tasks": [
+        "reaction_yield_prediction",
+        "ood_generalization",
+        "active_learning_hte"
+      ],
+      "record_count": "~27,500 standardized Buchwald-Hartwig HTE reactions (11.3k active-learning + 16.2k literature HTE)",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "paroutes",
+      "name": "PaRoutes 2.0",
+      "category": "dataset",
+      "role": "Multi-step retrosynthesis route-prediction benchmark and purchasable building-block stock sets grounding buy-or-make CASP evaluation (Digital Discovery)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://zenodo.org/records/6275421",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/MolecularAI/PaRoutes"
+        },
+        {
+          "label": "Zenodo",
+          "url": "https://zenodo.org/records/6275421"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "Reaction Tree JSON",
+        "SMILES"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Exclude held-out n1/n5 patent target routes (10,000 routes each) from single-step template/policy training.",
+      "huggingface_id": null,
+      "doi": "10.1039/D2DD00015F",
+      "tasks": [
+        "retrosynthesis",
+        "multi_step_route_planning",
+        "stock_triage"
+      ],
+      "record_count": "20,000 benchmark multi-step synthetic routes (n1 + n5) plus ~1M curated patent reactions and stock lists",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "orderly",
+      "name": "ORDerly",
+      "category": "dataset",
+      "role": "Reproducible data-cleaning pipeline and standardized forward/condition prediction benchmark extracted from the Open Reaction Database (JCIM 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "GitHub",
+          "url": "https://github.com/sustainable-processes/orderly"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "Parquet",
+        "Reaction SMILES"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.1021/acs.jcim.4c00292",
+      "tasks": [
+        "condition_recommendation",
+        "forward_reaction_prediction",
+        "reaction_cleaning"
+      ],
+      "record_count": "~780,000 cleaned and canonicalized organic reactions with reagents, solvents, and catalysts",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "coconut-2",
+      "name": "COCONUT 2.0",
+      "category": "dataset",
+      "role": "Curated Collection of Open Natural Products database with standardized stereochemistry, taxonomy, and source annotations (Nucleic Acids Research 2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC0-1.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://coconut.naturalproducts.net/"
+        },
+        {
+          "label": "docs",
+          "url": "https://steinbeck-lab.github.io/coconut/"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Steinbeck-Lab/coconut"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "SDF",
+        "SMILES",
+        "InChI",
+        "CSV"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only",
+        "tool_integration"
+      ],
+      "scraping_policy": "public_api_rate_limited",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.1093/nar/gkae1063",
+      "tasks": [
+        "natural_product_discovery",
+        "de_novo_molecule_generation",
+        "pharmacophore_screening"
+      ],
+      "record_count": "~700,000 curated open natural product chemical structures across 60+ open data sources",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "opxrd",
+      "name": "opXRD",
+      "category": "dataset",
+      "role": "Multi-institution open experimental powder X-ray diffraction (pXRD) corpus grounding crystal phase identification and L4 lab-attrib NNLS deconvolution (2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://zenodo.org/records/15298026",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2503.05577"
+        },
+        {
+          "label": "Zenodo",
+          "url": "https://zenodo.org/records/15298026"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/caobin/opxrd_hkust_expdata"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "XY/CSV Diffractogram",
+        "CIF"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "XRD"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": "caobin/opxrd_hkust_expdata",
+      "doi": "10.48550/arXiv.2503.05577",
+      "tasks": [
+        "phase_identification",
+        "xrd_deconvolution",
+        "experimental_diffractogram_matching"
+      ],
+      "record_count": "Multi-institution experimental powder XRD patterns (tens of thousands of labeled and unlabeled scans)",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "alab-gpss",
+      "name": "Ceder Group A-Lab / GPSS",
+      "category": "dataset",
+      "role": "Autonomous solid-state powder synthesis campaign records, experimental XRD diffractograms, and DARA automated Rietveld Rwp refinements from UC Berkeley / LBNL A-Lab and GPSS",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "DOI",
+          "url": "https://doi.org/10.1038/s41586-023-06734-w"
+        },
+        {
+          "label": "GPSS GitHub",
+          "url": "https://github.com/CederGroupHub/alab_gpss_public"
+        },
+        {
+          "label": "DARA XRD",
+          "url": "https://github.com/CederGroupHub/dara"
+        },
+        {
+          "label": "AlabOS",
+          "url": "https://github.com/CederGroupHub/alabos"
+        }
+      ],
+      "supported_hardware": [
+        "Modular SDL Instruments"
+      ],
+      "protocol_formats": [
+        "XRD JSON/CSV",
+        "CIF",
+        "Rietveld Rwp Report"
+      ],
+      "has_simulator": false,
+      "analytical_modalities": [
+        "XRD"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.1038/s41586-023-06734-w",
+      "tasks": [
+        "solid_state_synthesis_planning",
+        "rietveld_rwp_refinement",
+        "xrd_deconvolution"
+      ],
+      "record_count": "355+ autonomous solid-state trial syntheses (58 targets in A-Lab + GPSS halide spinel XRD/Rwp campaigns)",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "ehrsql-2024",
+      "name": "EHRSQL-2024",
+      "category": "dataset",
+      "role": "Abstention-aware clinical electronic health record (MIMIC-IV SQLite) text-to-SQL reliability benchmark grounding L4 lab-verify and L6 abstention gates (NAACL ClinicalNLP 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2405.06673"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/glee4810/ehrsql-2024"
+        },
+        {
+          "label": "EHRSQL",
+          "url": "https://github.com/glee4810/EHRSQL"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "SQLite",
+        "JSON"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Held-out abstention-aware clinical SQLite benchmark; strictly eval_only - never ingest EHRSQL-2024 splits into L3 post-training.",
+      "huggingface_id": null,
+      "doi": "10.48550/arXiv.2405.06673",
+      "tasks": [
+        "text_to_sql",
+        "abstention_calibration",
+        "clinical_database_qa"
+      ],
+      "record_count": "5,124 MIMIC-IV clinical SQLite question-SQL/unanswerable pairs across train/valid/test splits",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "spider2",
+      "name": "Spider 2.0",
+      "category": "dataset",
+      "role": "Enterprise and scientific multi-dialect text-to-SQL workflow benchmark (BigQuery, Snowflake, SQLite) grounding L4 lab-verify SQL execution gates (ICLR 2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-SA-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://spider2-sql.github.io/"
+        },
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2411.07763"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/xlang-ai/Spider2"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/xlangai/spider2-lite"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "SQLite",
+        "BigQuery/Snowflake SQL",
+        "JSONL"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Held-out enterprise/scientific text-to-SQL evaluation suite; strictly eval_only - exclude all Spider 2.0 tasks and gold SQL scripts from L3 training.",
+      "huggingface_id": "xlangai/spider2-lite",
+      "doi": "10.48550/arXiv.2411.07763",
+      "tasks": [
+        "text_to_sql",
+        "agentic_sql_workflow",
+        "execution_verification"
+      ],
+      "record_count": "632 real-world enterprise/scientific text-to-SQL workflow tasks (547 Spider2-Lite + Snow/Agent subsets)",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "putnambench",
+      "name": "PutnamBench",
+      "category": "dataset",
+      "role": "Competition-level undergraduate formal theorem-proving benchmark in Lean 4, Isabelle, and Coq backing L4 lab-verify and L6 YLM formal reasoning evaluation (NeurIPS 2024)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "MIT",
+      "osi_approved": true,
+      "license_evidence": "https://github.com/trishullab/PutnamBench",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://trishullab.github.io/PutnamBench/"
+        },
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2407.11214"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/trishullab/PutnamBench"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/amitayusht/PutnamBench"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "Lean 4",
+        "Isabelle",
+        "Coq"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [],
+      "allowed_purposes": [
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": "Held-out Putnam formal mathematics benchmark; strictly eval_only - never train neural theorem provers on PutnamBench formalizations.",
+      "huggingface_id": "amitayusht/PutnamBench",
+      "doi": "10.48550/arXiv.2407.11214",
+      "tasks": [
+        "formal_theorem_proving",
+        "lean4_verification",
+        "mathematical_reasoning"
+      ],
+      "record_count": "640+ formalized William Lowell Putnam Mathematical Competition problems (1962-2023) in Lean 4",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "uci-gas-sensor-drift",
+      "name": "UCI #224 Gas Sensor Array 36-Month Drift",
+      "category": "dataset",
+      "role": "36-month longitudinal 16-sensor metal-oxide (MOX) chemiresistive gas sensor array drift corpus across 6 volatile analytes grounding sensor calibration and drift adaptation",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC-BY-4.0",
+      "osi_approved": false,
+      "license_evidence": "https://archive.ics.uci.edu/dataset/224/gas+sensor+array+drift+dataset",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "UCI #224",
+          "url": "https://archive.ics.uci.edu/dataset/224/gas+sensor+array+drift+dataset"
+        },
+        {
+          "label": "DOI",
+          "url": "https://doi.org/10.24432/C5RP6W"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "LIBSVM/CSV Batches"
+      ],
+      "has_simulator": null,
+      "analytical_modalities": [
+        "chemiresistive_gas_sensor"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": null,
+      "doi": "10.24432/C5RP6W",
+      "tasks": [
+        "sensor_drift_compensation",
+        "gas_classification",
+        "temporal_domain_adaptation"
+      ],
+      "record_count": "13,910 measurements across 10 chronological batches (36 months, 16 MOX sensors, 6 pure gases)",
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "layered-depth",
+      "name": "Princeton LayeredDepth",
+      "category": "dataset",
+      "role": "Real and Infinigen-synthetic multi-layer RGB-D perception corpus for transparent glassware, vessels, and refractive surfaces grounding L1 lab-hands visual perception (ICCV 2025)",
+      "layer": null,
+      "maintenance_status": "active",
+      "spdx_license": "CC0-1.0",
+      "osi_approved": false,
+      "license_evidence": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use_ok": true,
+      "links": [
+        {
+          "label": "site",
+          "url": "https://layereddepth.cs.princeton.edu/"
+        },
+        {
+          "label": "paper",
+          "url": "https://arxiv.org/abs/2503.11633"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/princeton-vl/LayeredDepth"
+        },
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/datasets/princeton-vl/LayeredDepth"
+        }
+      ],
+      "supported_hardware": [],
+      "protocol_formats": [
+        "PNG/Parquet Multi-Layer Depth"
+      ],
+      "has_simulator": true,
+      "analytical_modalities": [
+        "optical_imaging"
+      ],
+      "allowed_purposes": [
+        "train_commercial",
+        "train_academic",
+        "eval_only"
+      ],
+      "scraping_policy": "git_or_hf_download",
+      "contamination_warning": null,
+      "huggingface_id": "princeton-vl/LayeredDepth",
+      "doi": "10.48550/arXiv.2503.11633",
+      "tasks": [
+        "transparent_object_depth",
+        "multi_layer_depth_estimation",
+        "glassware_perception"
+      ],
+      "record_count": "1,500 real-world annotated images + 15,300 synthetic multi-layer transparent-object scenes",
+      "last_checked": "2026-11-27"
     },
     {
       "id": "labutopia",

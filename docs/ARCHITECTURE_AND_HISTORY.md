@@ -22,16 +22,16 @@ Laboratory automation spans heterogeneous liquid handlers (`Opentrons`, `Hamilto
 ## 2. Data
 
 ### Canonical Catalog (`atlas.json` & `schema/atlas.schema.json`)
-All `70` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
+All `84` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020-12 JSON Schema [`schema/atlas.schema.json`](../schema/atlas.schema.json) (`additionalProperties: false`) and synchronized byte-for-byte with [`README.md`](../README.md) via `scripts/sync_catalog.py`:
 
 | Category ID | Section Title | Entries | Key Governance Fields |
 |---|---|---:|---|
 | `autolab_sibling` | Related Auto-Lab repositories (`L6` to `L0`) | 21 | `layer` (`Hub`, `L6`..`L0`), `spdx_license` (`MIT`), `has_simulator` |
 | `hardware` | Liquid handlers and lab robots | 5 | `supported_hardware`, `protocol_formats`, `has_simulator` |
 | `cloud_lab` | Cloud labs and automated foundries | 4 | `maintenance_status` (`Strateos` flagged `commercial_restructured`) |
-| `software` | Open-source lab automation software | 12 | `spdx_license`, `osi_approved` (non-OSI flagged), `maintenance_status` (`Aquarium` `archived`, `Autoprotocol` & `XDL generation` `legacy`) |
+| `software` | Open-source lab automation software | 14 | `spdx_license`, `osi_approved` (non-OSI flagged), `maintenance_status` (`Aquarium` `archived`, `Autoprotocol` & `XDL generation` `legacy`, `PyJobShop` & `HuggingFace LeRobot` `active`) |
 | `chemistry_and_procurement` | Chemical synthesis, reaction databases, and procurement | 6 | `ORD`, `USPTO`, `AiZynthFinder`, `RDKit`, `PubChem PUG REST`, `eLabFTW` |
-| `dataset` | Open protocol sources and datasets | 17 | `spdx_license`, `commercial_use_ok`, `allowed_purposes`, `contamination_warning`, `analytical_modalities`, `huggingface_id`, `doi`, `record_count` |
+| `dataset` | Open protocol sources and datasets | 29 | `spdx_license`, `commercial_use_ok`, `allowed_purposes`, `contamination_warning`, `analytical_modalities`, `huggingface_id`, `doi`, `record_count` |
 | `simulation_and_verification` | Embodied simulation & formal verification (`L4` cross-refs) | 5 | Cross-references to `lab-rehearsal` and `lab-verify` |
 
 ---
@@ -56,6 +56,7 @@ All `70` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020
 
 - **Zero Parametric Training**: Pure Python 3.10+ standard library runtime (`dependencies = []` in [`pyproject.toml`](../pyproject.toml)).
 - **Continuous Verification (`.github/workflows/links.yml`)**:
+  - Runs Lean `v4.36.0` (`lake build`) on [`lean/LabAtlasLean.lean`](../lean/LabAtlasLean.lean) followed by [`scripts/verify_lean_parity.py`](../scripts/verify_lean_parity.py), auditing `#print axioms` across all `48` theorems (`no custom axioms`; strictly standard kernel axioms `propext`, `Classical.choice`, `Quot.sound`) and executing `335` `#eval` differential parity cases against `lab_atlas.spdx`.
   - Runs offline `pytest` unit tests and `python scripts/sync_catalog.py --check` on every `push`, `pull_request`, and `workflow_dispatch`.
   - Runs live concurrent link checks (`timeout-minutes: 10`, `permissions: contents: read`) on `push`, `pull_request`, `workflow_dispatch`, and weekly Mondays (`0 12 * * 1`), uploading `reports/link_status.json` as a workflow artifact and failing CI (`exit 1`) on broken links.
 
@@ -69,6 +70,7 @@ All `70` entries reside in [`atlas.json`](../atlas.json), governed by Draft 2020
 | `0.2.0` | `2026-11-23` | Yani Guan | `fix/resolve-audit-issues` | Resolved audit issues `#1..#22`: published 58-entry `atlas.json` + Draft 2020-12 `schema/atlas.schema.json`, packaged `lab-atlas` CLI, added SPDX/OSI/commercial/contamination metadata, hardware-to-SDK-to-IR compatibility matrix, chemistry & `L4` cross-references, SSRF-safe concurrent balanced-paren link checker with JSON reporting, hardened CI, and offline `pytest` suite. |
 | `cab4852` | `2026-11-25` | Yani Guan | `fix/phase2-audit-and-wire` | Resolved Phase-2 audit issues `#24..#29`: added `LabAtlasLean` SPDX 2.3/3.0 bounded lattice + lineage taint proofs, stdlib compound SPDX AST parser (`lab_atlas/spdx.py`), typed `hardware_capabilities` & `analytical_modalities`, pinned-IP SSRF redirect validation, and dynamic `autolab_wire.py` (`autolab-wire/v1`) node. |
 | `0.3.0` | `2026-11-25` | Yani Guan | `feat/open-datasets-2026` | Expanded `dataset` registry from `6` to `17` verified entries (`70` total) covering 2024-2026 open wet-lab atomic actions (`FineBio`), chemistry/bio benchmarks (`ChemBench`, `BixBench`), MS/MS & multimodal NMR/FTIR spectroscopy (`MassSpecGym`, `MSD`), solubility & electrolyte formulation (`AqSolDB`, `CALiSol-23`), open XRD/Raman crystallography (`COD/ROD`, `OMat24`), machine audio (`DCASE Task 2`), and robot manipulation (`DROID`). |
+| `0.4.0` | `2026-11-27` | Yani Guan | `feat/frontier-84-entries-and-lean-ci` | Expanded catalog from `70` to `84` entries (`12` frontier chemistry/XRD/SQL/Lean-4/drift/transparent-depth datasets & benchmarks + `PyJobShop` & `HuggingFace LeRobot`), hardened fail-closed `autolab_wire.py` input validation, and added live Lean 4.36.0 `#print axioms` + 335-case `#eval` differential parity CI. |
 
 ---
 

@@ -56,6 +56,7 @@ ALLOWED_MODALITIES = (
     "optical_imaging",
     "acoustic_monitoring",
     "SAXS_WAXS",
+    "chemiresistive_gas_sensor",
 )
 ALLOWED_DECK_ARCHITECTURES = (
     "sbs_fixed_slots",

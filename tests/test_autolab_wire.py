@@ -322,3 +322,86 @@ def test_issue_24_wire_blocks_noncanonical_ssrf_urls_offline_and_with_dns_pinnin
     )
     assert pinned_ok["halted"] is False
     assert pinned_ok["platform_grounding"]["pinned_ips"]["github.com:443"] == ["93.184.216.34"]
+
+
+@pytest.mark.parametrize(
+    "bad_platform",
+    [
+        None,
+        "",
+        "   ",
+        123,
+        True,
+        False,
+        ["opentrons_ot2"],
+        {"platform_id": "opentrons_ot2"},
+        "opentrons_ot2; rm -rf /",
+        "../opentrons_ot2",
+    ],
+)
+def test_autolab_wire_fails_closed_on_malformed_or_non_string_target_platform(
+    bad_platform: object,
+) -> None:
+    """Reject None, blank, non-string, container, or punctuated target_platform without silent slug coercion."""
+    res = autolab_wire.process_packet(
+        {
+            "target_platform": bad_platform,
+            "resource_url": "https://github.com/yaniguan/stepbot",
+            "license_class": "MIT",
+            "for_training": False,
+        }
+    )
+    assert res["halted"] is True
+    assert res["halt_reason"] == "L5_ATLAS_UNKNOWN_PLATFORM"
+    assert res["platform_grounding"]["resolved_platform_id"] is None
+    assert res["trace"][-1]["status"] == "BLOCK"
+
+
+@pytest.mark.parametrize(
+    "malformed_packet",
+    [
+        {"for_training": "false", "license_class": "eval_only"},
+        {"for_training": 0, "license_class": "eval_only"},
+        {"for_training": None, "license_class": "MIT"},
+        {"for_training": [], "license_class": "MIT"},
+        {"commercial": 0, "license_class": "CC-BY-NC-4.0", "for_training": True},
+        {"commercial": "false", "license_class": "CC-BY-NC-4.0", "for_training": True},
+        {"commercial": None, "license_class": "MIT", "for_training": False},
+        {"resolve_dns": "no", "license_class": "MIT", "for_training": False},
+        {"resolve_dns": 1, "license_class": "MIT", "for_training": False},
+        {"halted": "false", "license_class": "MIT", "for_training": False},
+        {"halted": 0, "license_class": "MIT", "for_training": False},
+        {"license_class": None, "for_training": False},
+        {"license_class": "", "for_training": False},
+        {"license_class": "   ", "for_training": False},
+        {"license_class": 123, "for_training": False},
+        {"license_class": True, "for_training": False},
+        {"license_class": ["MIT"], "for_training": False},
+        {"license_class": "MIT", "parent_licenses": None, "for_training": False},
+        {"license_class": "MIT", "parent_licenses": "", "for_training": False},
+        {"license_class": "MIT", "parent_licenses": 0, "for_training": False},
+        {"license_class": "MIT", "parent_licenses": False, "for_training": False},
+        {"license_class": "MIT", "parent_licenses": {}, "for_training": False},
+        {"license_class": "MIT", "parent_licenses": "MIT", "for_training": False},
+        {"license_class": "MIT", "parent_licenses": [None], "for_training": False},
+        {"license_class": "MIT", "parent_licenses": [123], "for_training": False},
+        {"license_class": "MIT", "parent_licenses": [""], "for_training": False},
+    ],
+)
+def test_autolab_wire_fails_closed_on_non_boolean_or_malformed_license_fields(
+    malformed_packet: dict[str, object],
+) -> None:
+    """Reject non-boolean flags and non-string/null license fields (including str(None)->NONE bypass)."""
+    base = {"resource_url": "https://github.com/yaniguan/stepbot"}
+    base.update(malformed_packet)
+    out = autolab_wire.process_packet(base)
+    assert out["halted"] is True
+    assert out["halt_reason"] == "L5_ATLAS_LICENSE_OR_URL_BLOCK"
+    assert out["platform_grounding"]["license_ok"] is False
+    assert out["trace"][-1]["status"] == "BLOCK"
+
+
+def test_autolab_wire_rejects_non_dict_packet() -> None:
+    """Raise TypeError when process_packet receives a non-dict payload."""
+    with pytest.raises(TypeError, match="dict"):
+        autolab_wire.process_packet(["not", "a", "dict"])  # type: ignore[arg-type]

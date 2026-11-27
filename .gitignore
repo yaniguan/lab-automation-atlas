@@ -25,3 +25,4 @@ htmlcov/
 /reports/
 /data/
 lean/.lake/
+lean/lake-manifest.json

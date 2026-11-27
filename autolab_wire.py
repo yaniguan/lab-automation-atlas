@@ -96,6 +96,7 @@ _PLATFORM_HW_KEYWORDS: dict[str, tuple[str, ...]] = {
 }
 
 _CROSS_REF_LABELS: frozenset[str] = frozenset({"lab-rehearsal", "lab-verify", "Studio"})
+_VALID_PLATFORM_SLUG_RE = re.compile(r"^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$")
 
 
 @dataclass(frozen=True)
@@ -244,12 +245,22 @@ def _build_indexed_atlas(catalog_path: Path) -> _IndexedAtlas:
     return indexed
 
 
-def _match_catalog_entry_by_url(url: str, indexed: _IndexedAtlas) -> dict[str, Any] | None:
+def _match_catalog_entries_by_url(url: str, indexed: _IndexedAtlas) -> list[dict[str, Any]]:
     norm_target = _normalize_url_for_match(url)
+    matched: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
     for prefix, entry in indexed.url_prefixes:
         if norm_target == prefix or norm_target.startswith(prefix + "/"):
-            return entry
-    return None
+            eid = entry["id"]
+            if eid not in seen_ids:
+                seen_ids.add(eid)
+                matched.append(entry)
+    return matched
+
+
+def _match_catalog_entry_by_url(url: str, indexed: _IndexedAtlas) -> dict[str, Any] | None:
+    matches = _match_catalog_entries_by_url(url, indexed)
+    return matches[0] if matches else None
 
 
 def _is_https_ssrf_safe(
@@ -282,6 +293,9 @@ def process_packet(
     resolver: Callable[..., Any] | None = None,
 ) -> dict[str, Any]:
     """Validate L5 platform grounding, HTTPS SSRF bounds, and default-deny SPDX training posture."""
+    if not isinstance(packet, dict):
+        raise TypeError(f"autolab_wire packet must be a dict, got {type(packet).__name__}")
+
     out: dict[str, Any] = copy.deepcopy(packet)
     out.setdefault("schema_version", SCHEMA_VERSION)
     out.setdefault("halted", False)
@@ -292,20 +306,59 @@ def process_packet(
     if out["halted"] is True:
         return out
 
+    malformed_fields: list[str] = []
+    if not isinstance(out["halted"], bool):
+        malformed_fields.append("halted")
+    if not isinstance(out["trace"], list):
+        out["trace"] = []
+        malformed_fields.append("trace")
+    if not isinstance(out["bottom_reasoning_traces"], list):
+        out["bottom_reasoning_traces"] = []
+        malformed_fields.append("bottom_reasoning_traces")
+
     indexed = _build_indexed_atlas(Path(catalog_path) if catalog_path else (REPO_DIR / "atlas.json"))
     entries = indexed.catalog["entries"]
     len_entries = len(entries)
 
+    has_platform_key = "target_platform" in out
     raw_platform = out.get("target_platform", "opentrons_ot2")
-    target_platform = str(raw_platform).strip() if raw_platform is not None else ""
-    norm_platform = _normalize_slug(target_platform) if target_platform else ""
-    platform_record = indexed.platforms.get(norm_platform)
+    if isinstance(raw_platform, str):
+        stripped_platform = raw_platform.strip()
+        if stripped_platform and _VALID_PLATFORM_SLUG_RE.match(stripped_platform):
+            target_platform = stripped_platform
+            norm_platform = _normalize_slug(stripped_platform)
+            platform_record = indexed.platforms.get(norm_platform)
+        else:
+            target_platform = stripped_platform
+            norm_platform = ""
+            platform_record = None
+    else:
+        target_platform = repr(raw_platform) if has_platform_key else ""
+        norm_platform = ""
+        platform_record = None
 
     resource_url = out.get("resource_url", "https://github.com/yaniguan/stepbot")
-    license_expr = str(out.get("license_class", "MIT"))
-    for_training = bool(out.get("for_training", True))
-    commercial = bool(out.get("commercial", True))
-    resolve_dns = bool(out.get("resolve_dns", False))
+
+    raw_for_training = out.get("for_training", True)
+    if isinstance(raw_for_training, bool):
+        for_training = raw_for_training
+    else:
+        for_training = True
+        malformed_fields.append("for_training")
+
+    raw_commercial = out.get("commercial", True)
+    if isinstance(raw_commercial, bool):
+        commercial = raw_commercial
+    else:
+        commercial = True
+        malformed_fields.append("commercial")
+
+    raw_resolve_dns = out.get("resolve_dns", False)
+    if isinstance(raw_resolve_dns, bool):
+        resolve_dns = raw_resolve_dns
+    else:
+        resolve_dns = False
+        malformed_fields.append("resolve_dns")
 
     pinned_ips: dict[tuple[str, int], list[str]] = {}
     url_safe = _is_https_ssrf_safe(
@@ -315,28 +368,52 @@ def process_packet(
         pinned_ips=pinned_ips if resolve_dns else None,
     )
 
-    # 1. Evaluate caller-supplied SPDX expression (supporting compound AND / OR / WITH)
-    own_eval = evaluate_spdx_expression(license_expr, allow_policy_aliases=True)
-    spdx_known = own_eval.spdx_known
-    eff_class = own_eval.license_class
-
-    # 2. Fold upstream parent licenses if derived corpus lineage is provided
-    raw_parents = out.get("parent_licenses") or []
-    parent_classes: list[str] = []
-    if isinstance(raw_parents, list):
-        for p_expr in raw_parents:
-            p_eval = evaluate_spdx_expression(str(p_expr), allow_policy_aliases=True)
-            if not p_eval.spdx_known:
-                spdx_known = False
-            parent_classes.append(p_eval.license_class)
+    # 1. Evaluate caller-supplied SPDX expression strictly (fail-closed on non-string or blank)
+    raw_license = out.get("license_class", "MIT")
+    if isinstance(raw_license, str) and raw_license.strip():
+        license_expr = raw_license.strip()
+        own_eval = evaluate_spdx_expression(license_expr, allow_policy_aliases=True)
+        spdx_known = own_eval.spdx_known
+        eff_class = own_eval.license_class
     else:
+        license_expr = repr(raw_license)
         spdx_known = False
+        eff_class = "custom_terms"
+        malformed_fields.append("license_class")
+
+    # 2. Fold upstream parent licenses strictly if derived corpus lineage key is provided
+    parent_classes: list[str] = []
+    if "parent_licenses" in out:
+        raw_parents = out["parent_licenses"]
+        if isinstance(raw_parents, list):
+            for p_expr in raw_parents:
+                if isinstance(p_expr, str) and p_expr.strip():
+                    p_eval = evaluate_spdx_expression(p_expr.strip(), allow_policy_aliases=True)
+                    if not p_eval.spdx_known:
+                        spdx_known = False
+                    parent_classes.append(p_eval.license_class)
+                else:
+                    spdx_known = False
+                    parent_classes.append("custom_terms")
+                    malformed_fields.append("parent_licenses")
+        else:
+            spdx_known = False
+            eff_class = license_conj(eff_class, "custom_terms")
+            malformed_fields.append("parent_licenses")
     if parent_classes:
         eff_class = effective_license_class(parent_classes, eff_class)
 
-    # 3. Cross-match normalized resource_url against verified atlas.json governance records
-    matched_entry = _match_catalog_entry_by_url(resource_url, indexed) if isinstance(resource_url, str) and url_safe else None
-    if matched_entry is not None:
+    if malformed_fields:
+        spdx_known = False
+        eff_class = license_conj(eff_class, "custom_terms")
+
+    # 3. Cross-match normalized resource_url against all matching verified atlas.json governance records
+    matched_entries = (
+        _match_catalog_entries_by_url(resource_url, indexed)
+        if isinstance(resource_url, str) and url_safe
+        else []
+    )
+    for matched_entry in matched_entries:
         cat_eval = evaluate_spdx_expression(matched_entry["spdx_license"], allow_policy_aliases=False)
         eff_class = license_conj(eff_class, cat_eval.license_class)
         purposes = matched_entry["allowed_purposes"]
@@ -348,15 +425,18 @@ def process_packet(
         if for_training and commercial and matched_entry["commercial_use_ok"] is False:
             eff_class = license_conj(eff_class, "non_commercial")
 
-    # 4. Mirror LabAtlasLean.checkAtlasResource
-    policy_violation = check_atlas_resource_policy(
-        https_only=url_safe,
-        no_private_ip=url_safe,
-        spdx_known=spdx_known,
-        license_class=eff_class,
-        for_training=for_training,
-        commercial=commercial,
-    )
+    # 4. Mirror LabAtlasLean.checkAtlasResource (with strict fail-closed malformed field reporting)
+    if malformed_fields:
+        policy_violation: str | None = f"malformed_packet_fields({','.join(sorted(set(malformed_fields)))})"
+    else:
+        policy_violation = check_atlas_resource_policy(
+            https_only=url_safe,
+            no_private_ip=url_safe,
+            spdx_known=spdx_known,
+            license_class=eff_class,
+            for_training=for_training,
+            commercial=commercial,
+        )
     license_and_url_ok = policy_violation is None
 
     if not license_and_url_ok:
