@@ -356,3 +356,31 @@ def test_issue_26_exhaustive_lean_python_lattice_and_truth_table_parity() -> Non
     )
     assert dec.allowed is False
     assert dec.rule_violated == "academic_training_license_guard"
+
+
+def test_lean_436_axiom_audit_and_100plus_eval_differential_parity() -> None:
+    """Verify lean/README.md documents no custom axioms and run live lake env lean #eval parity if installed."""
+    from scripts.verify_lean_parity import (
+        ALLOWED_LEAN_AXIOMS,
+        discover_lean_theorems,
+        resolve_lake_binary,
+        verify_lean_axioms_and_parity,
+    )
+
+    lean_readme = (REPO_ROOT / "lean" / "README.md").read_text(encoding="utf-8")
+    assert "no custom axioms" in lean_readme.lower()
+
+    theorems = discover_lean_theorems(REPO_ROOT / "lean" / "LabAtlasLean.lean")
+    assert len(theorems) >= 48
+    assert "LabAtlasLean.LicenseClass.conj_lub" in theorems
+    assert "LabAtlasLean.dag_eval_ancestor_blocks_training" in theorems
+
+    try:
+        lake_bin = resolve_lake_binary()
+    except FileNotFoundError:
+        pytest.skip("Lean 4 `lake` binary not installed in this environment (verified in lean-proofs CI job)")
+
+    summary = verify_lean_axioms_and_parity(lake_bin=lake_bin, run_build=False, min_cases=100)
+    assert int(summary["theorems_verified"]) >= 48  # type: ignore[arg-type]
+    assert int(summary["parity_cases_total"]) >= 300  # type: ignore[arg-type]
+    assert set(summary["axioms_observed"]).issubset(ALLOWED_LEAN_AXIOMS)  # type: ignore[arg-type]

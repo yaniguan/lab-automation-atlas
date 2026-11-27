@@ -43,24 +43,59 @@ NEW_2026_DATASET_SPECS: dict[str, tuple[str, bool, bool, list[str]]] = {
     "omat24": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
     "dcase-task2-asd": ("CC-BY-NC-SA-4.0", False, False, ["train_academic", "eval_only"]),
     "droid": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "bigsoldb-2": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "bh-hte-ood": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "paroutes": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "orderly": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "coconut-2": (
+        "CC0-1.0",
+        False,
+        True,
+        ["train_commercial", "train_academic", "eval_only", "tool_integration"],
+    ),
+    "opxrd": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "alab-gpss": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "ehrsql-2024": ("CC-BY-4.0", False, True, ["eval_only"]),
+    "spider2": ("CC-BY-SA-4.0", False, True, ["eval_only"]),
+    "putnambench": ("MIT", True, True, ["eval_only"]),
+    "uci-gas-sensor-drift": (
+        "CC-BY-4.0",
+        False,
+        True,
+        ["train_commercial", "train_academic", "eval_only"],
+    ),
+    "layered-depth": ("CC0-1.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+}
+
+NEW_FRONTIER_SOFTWARE_SPECS: dict[str, tuple[str, bool, bool]] = {
+    "pyjobshop": ("MIT", True, True),
+    "lerobot": ("Apache-2.0", True, True),
 }
 
 
 def test_open_datasets_2026_catalog_schema_and_sync() -> None:
-    """Verify all 11 added 2024-2026 open datasets pass schema validation and README/resource sync."""
+    """Verify all 84 entries (including 23 added 2024-2026 datasets + PyJobShop/LeRobot) pass schema and sync."""
     catalog = load_catalog()
     schema = load_schema()
 
     jsonschema.Draft202012Validator(schema).validate(catalog)
     assert validate_catalog(catalog) == []
-    assert len(catalog["entries"]) >= 70
+    assert len(catalog["entries"]) == 84
     assert check_readme_sync(REPO_ROOT / "README.md", catalog) is True
     assert (REPO_ROOT / "atlas.json").read_text(encoding="utf-8") == (
         RESOURCE_DIR / "atlas.json"
     ).read_text(encoding="utf-8")
 
     datasets = {e["id"]: e for e in catalog["entries"] if e["category"] == "dataset"}
-    assert len(datasets) >= 17
+    assert len(datasets) == 29
+
+    software = {e["id"]: e for e in catalog["entries"] if e["category"] == "software"}
+    assert len(software) == 14
+    for sw_id, (sw_spdx, sw_osi, sw_comm) in NEW_FRONTIER_SOFTWARE_SPECS.items():
+        assert sw_id in software, f"Missing expected frontier solver/stack {sw_id}"
+        assert software[sw_id]["spdx_license"] == sw_spdx
+        assert software[sw_id]["osi_approved"] is sw_osi
+        assert software[sw_id]["commercial_use_ok"] is sw_comm
 
     for ds_id, (expected_spdx, expected_osi, expected_comm, expected_purposes) in NEW_2026_DATASET_SPECS.items():
         assert ds_id in datasets, f"Missing expected 2024-2026 dataset {ds_id}"
@@ -118,7 +153,10 @@ def test_open_datasets_2026_spdx_lattice_posture_alignment() -> None:
     assert finebio_ev.commercial_train_ok is False
 
 
-@pytest.mark.parametrize("eval_only_id", ["finebio", "chembench", "bixbench"])
+@pytest.mark.parametrize(
+    "eval_only_id",
+    ["finebio", "chembench", "bixbench", "ehrsql-2024", "spider2", "putnambench"],
+)
 def test_open_datasets_2026_eval_only_contamination_warnings_required(eval_only_id: str) -> None:
     """Verify held-out 2024-2026 evaluation suites enforce non-empty contamination_warning invariants."""
     catalog = load_catalog()
@@ -143,6 +181,11 @@ def test_open_datasets_2026_eval_only_contamination_warnings_required(eval_only_
         "https://github.com/Future-House/BixBench",
         "https://huggingface.co/datasets/futurehouse/BixBench",
         "https://github.com/aistairc/FineBio",
+        "https://github.com/glee4810/ehrsql-2024",
+        "https://github.com/xlang-ai/Spider2",
+        "https://huggingface.co/datasets/xlangai/spider2-lite",
+        "https://github.com/trishullab/PutnamBench",
+        "https://huggingface.co/datasets/amitayusht/PutnamBench",
     ],
 )
 def test_autolab_wire_blocks_2026_eval_only_benchmarks_from_training(eval_url: str) -> None:
@@ -237,10 +280,16 @@ def test_open_datasets_2026_analytical_modalities_and_cli_queries(
     assert {"multimodal-spectroscopic-dataset", "chembench"} <= nmr_ids
 
     xrd_ids = {e["id"] for e in filter_entries(entries, category="dataset", modality="XRD")}
-    assert {"crystallography-open-database", "omat24", "chembench"} <= xrd_ids
+    assert {"crystallography-open-database", "omat24", "chembench", "opxrd", "alab-gpss"} <= xrd_ids
 
     raman_ids = {e["id"] for e in filter_entries(entries, category="dataset", modality="Raman")}
     assert "crystallography-open-database" in raman_ids
+
+    gas_ids = {
+        e["id"]
+        for e in filter_entries(entries, category="dataset", modality="chemiresistive_gas_sensor")
+    }
+    assert "uci-gas-sensor-drift" in gas_ids
 
     acoustic_ids = {
         e["id"] for e in filter_entries(entries, category="dataset", modality="acoustic_monitoring")
@@ -250,7 +299,7 @@ def test_open_datasets_2026_analytical_modalities_and_cli_queries(
     optical_ids = {
         e["id"] for e in filter_entries(entries, category="dataset", modality="optical_imaging")
     }
-    assert {"finebio", "droid"} <= optical_ids
+    assert {"finebio", "droid", "layered-depth"} <= optical_ids
 
     rc = cli_main(["list", "--category", "dataset", "--purpose", "train_commercial", "--json"])
     assert rc == 0
@@ -258,6 +307,15 @@ def test_open_datasets_2026_analytical_modalities_and_cli_queries(
     assert {
         "massspecgym",
         "aqsoldb",
+        "bigsoldb-2",
+        "bh-hte-ood",
+        "paroutes",
+        "orderly",
+        "coconut-2",
+        "opxrd",
+        "alab-gpss",
+        "uci-gas-sensor-drift",
+        "layered-depth",
         "calisol-23",
         "crystallography-open-database",
         "omat24",
@@ -267,6 +325,9 @@ def test_open_datasets_2026_analytical_modalities_and_cli_queries(
         "finebio",
         "chembench",
         "bixbench",
+        "ehrsql-2024",
+        "spider2",
+        "putnambench",
         "multimodal-spectroscopic-dataset",
         "dcase-task2-asd",
     }.isdisjoint(comm_trainable)

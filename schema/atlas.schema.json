@@ -93,7 +93,8 @@
         "fluorescence_plate_reader",
         "optical_imaging",
         "acoustic_monitoring",
-        "SAXS_WAXS"
+        "SAXS_WAXS",
+        "chemiresistive_gas_sensor"
       ]
     },
     "DeckArchitecture": {

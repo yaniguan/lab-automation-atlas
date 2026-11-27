@@ -48,21 +48,24 @@ def test_readme_and_package_resources_byte_for_byte_sync() -> None:
 
 
 def test_software_spdx_licenses_and_non_osi_flags() -> None:
-    """Issue #9: Verify all 12 software entries have SPDX licenses, evidence URLs, and OSI flags."""
+    """Issue #9: Verify all 14 software entries have SPDX licenses, evidence URLs, and OSI flags."""
     catalog = load_catalog()
     software = [e for e in catalog["entries"] if e["category"] == "software"]
-    assert len(software) == 12
+    assert len(software) == 14
     by_id = {e["id"]: e for e in software}
 
     assert by_id["opentrons-python-api-v2"]["spdx_license"] == "Apache-2.0"
     assert by_id["pylabrobot"]["spdx_license"] == "MIT"
     assert by_id["or-tools"]["spdx_license"] == "Apache-2.0"
     assert by_id["bluesky"]["spdx_license"] == "BSD-3-Clause"
+    assert by_id["pyjobshop"]["spdx_license"] == "MIT"
+    assert by_id["lerobot"]["spdx_license"] == "Apache-2.0"
     assert by_id["xdl-generation"]["osi_approved"] is False
     assert by_id["xdl-chemputer"]["osi_approved"] is False
 
     readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     assert "*(non-OSI)*" in readme_text
+    assert f"`{len(catalog['entries'])}` typed entries" in readme_text
 
 
 def test_dataset_spdx_commercial_and_contamination_alignment_with_assayfold() -> None:
@@ -172,6 +175,8 @@ def test_workflow_and_gitignore_hygiene() -> None:
     assert "timeout-minutes:" in wf
     assert "pytest" in wf
     assert "upload-artifact@v4" in wf
+    assert "leanprover/lean-action@v1" in wf
+    assert "scripts/verify_lean_parity.py" in wf
 
     gi = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
     for pattern in (".venv/", "venv/", "*.py[cod]", "build/", "dist/", ".ruff_cache/", "/reports/"):

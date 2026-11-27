@@ -17,7 +17,7 @@ def test_cli_list_filters_and_json_output(capsys: pytest.CaptureFixture[str]) ->
     rc = cli_main(["list", "--category", "software", "--commercial-ok", "--osi-only", "--json"])
     assert rc == 0
     software = json.loads(capsys.readouterr().out)
-    assert len(software) == 9
+    assert len(software) == 11
     assert all(e["commercial_use_ok"] and e["osi_approved"] for e in software)
 
     rc = cli_main(["list", "--category", "dataset", "--purpose", "train_commercial", "--json"])
