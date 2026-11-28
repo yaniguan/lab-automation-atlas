@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/yaniguan/lab-automation-atlas/schema/atlas.schema.json",
   "title": "LabAutomationAtlasCatalog",
-  "description": "Strict machine-readable catalog schema for lab-automation-atlas (Auto-Lab Layer L5).",
+  "description": "Strict machine-readable catalog schema for lab-automation-atlas (Auto-Lab Layer L5). Companion Python-only rules enforced by lab_atlas.catalog.validate_catalog cover: compound SPDX 2.3/3.0 expression parsing and license-to-purpose/commercial-flag consistency, canonical HTTPS public-host and private/loopback IP SSRF validation, cross-entry uniqueness of entry id and hardware_capabilities.profiles[].platform_id, cross-reference of entry.category against root categories[], relational numeric envelope bounds (min_volume_ul <= max_volume_ul, min_temp_c <= max_temp_c, min_temp_c <= high_temp_seal_threshold_c), calendar-valid ISO-8601 dates via datetime.date.fromisoformat, and upstream-only license_evidence bans on generic license deeds or bare arXiv abstract pages for dataset entries.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -23,7 +23,7 @@
     },
     "last_verified": {
       "type": "string",
-      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
     },
     "categories": {
       "type": "array",
@@ -351,6 +351,7 @@
         "allowed_purposes": {
           "type": "array",
           "minItems": 1,
+          "uniqueItems": true,
           "items": {
             "type": "string",
             "enum": [
@@ -372,25 +373,51 @@
           ]
         },
         "contamination_warning": {
-          "type": ["string", "null"]
+          "type": ["string", "null"],
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "huggingface_id": {
-          "type": ["string", "null"]
+          "type": ["string", "null"],
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "doi": {
-          "type": ["string", "null"]
+          "type": ["string", "null"],
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "tasks": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         },
         "record_count": {
-          "type": ["string", "null"]
+          "type": ["string", "null"],
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "last_checked": {
           "type": "string",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
         }
+      },
+      "if": {
+        "properties": {
+          "allowed_purposes": {
+            "const": ["eval_only"]
+          }
+        },
+        "required": ["allowed_purposes"]
+      },
+      "then": {
+        "properties": {
+          "contamination_warning": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "required": ["contamination_warning"]
       }
     }
   }

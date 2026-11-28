@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.parse
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 from .linkcheck import SecurityValidationError, validate_url_target
-from .spdx import evaluate_spdx_expression, spdx_satisfies_filter
+from .spdx import LicenseEvaluation, evaluate_spdx_expression, spdx_satisfies_filter
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = PACKAGE_DIR.parent
@@ -207,6 +209,51 @@ def _is_nonempty_str(val: Any, min_len: int = 1) -> bool:
     return isinstance(val, str) and len(val.strip()) >= min_len
 
 
+def _is_valid_iso_date(val: Any) -> bool:
+    if not isinstance(val, str) or not _DATE_RE.match(val):
+        return False
+    try:
+        date.fromisoformat(val)
+    except ValueError:
+        return False
+    return True
+
+
+def is_generic_or_bare_arxiv_license_evidence(url: str) -> bool:
+    """Return True when `url` points to a generic license deed or bare arXiv paper page."""
+    if not isinstance(url, str) or not url.strip():
+        return False
+    parsed = urllib.parse.urlsplit(url.strip())
+    host = (parsed.hostname or "").strip().lower().rstrip(".")
+    if host.startswith("www."):
+        host = host[4:]
+    path_low = parsed.path.lower()
+    if host == "creativecommons.org" and (
+        path_low == "/licenses"
+        or path_low.startswith("/licenses/")
+        or path_low == "/publicdomain"
+        or path_low.startswith("/publicdomain/")
+    ):
+        return True
+    if host == "spdx.org" and (path_low == "/licenses" or path_low.startswith("/licenses/")):
+        return True
+    if host == "opensource.org" and (
+        path_low == "/licenses"
+        or path_low.startswith("/licenses/")
+        or path_low == "/license"
+        or path_low.startswith("/license/")
+    ):
+        return True
+    if host in ("arxiv.org", "export.arxiv.org") and (
+        path_low == "/abs"
+        or path_low.startswith("/abs/")
+        or path_low == "/pdf"
+        or path_low.startswith("/pdf/")
+    ):
+        return True
+    return False
+
+
 def _is_valid_https_url(val: Any) -> bool:
     if not isinstance(val, str) or not _HTTPS_RE.match(val):
         return False
@@ -315,7 +362,7 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
         errors.append(f"schema_version must be '1.0.0', got {catalog['schema_version']!r}")
     if catalog["atlas_name"] != "lab-automation-atlas":
         errors.append(f"atlas_name must be 'lab-automation-atlas', got {catalog['atlas_name']!r}")
-    if not isinstance(catalog["last_verified"], str) or not _DATE_RE.match(catalog["last_verified"]):
+    if not _is_valid_iso_date(catalog["last_verified"]):
         errors.append(f"Invalid last_verified date: {catalog['last_verified']!r}")
 
     categories = catalog["categories"]
@@ -385,6 +432,7 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
         if entry["maintenance_status"] not in ALLOWED_STATUSES:
             errors.append(f"{prefix}.maintenance_status invalid: {entry['maintenance_status']!r}")
 
+        spdx_eval: LicenseEvaluation | None = None
         if not _is_nonempty_str(entry["spdx_license"], 2):
             errors.append(f"{prefix}.spdx_license must be >= 2 chars.")
         else:
@@ -402,6 +450,12 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
             errors.append(f"{prefix}.osi_approved must be boolean.")
         if not _is_valid_https_url(entry["license_evidence"]):
             errors.append(f"{prefix}.license_evidence must be a safe public https:// URL.")
+        elif entry["category"] in ("dataset", "chemistry_and_procurement") and is_generic_or_bare_arxiv_license_evidence(
+            entry["license_evidence"]
+        ):
+            errors.append(
+                f"{prefix}.license_evidence must cite an upstream source rather than a generic license deed or bare arXiv page: {entry['license_evidence']!r}"
+            )
         if not _is_bool(entry["commercial_use_ok"]):
             errors.append(f"{prefix}.commercial_use_ok must be boolean.")
 
@@ -490,8 +544,41 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
                         )
 
         purposes = entry["allowed_purposes"]
-        if not isinstance(purposes, list) or len(purposes) < 1 or any(p not in ALLOWED_PURPOSES for p in purposes):
+        if (
+            not isinstance(purposes, list)
+            or len(purposes) < 1
+            or len(purposes) != len(set(purposes))
+            or any(p not in ALLOWED_PURPOSES for p in purposes)
+        ):
             errors.append(f"{prefix}.allowed_purposes invalid: {purposes!r}")
+        elif (
+            entry["category"] in ("dataset", "chemistry_and_procurement")
+            and spdx_eval is not None
+            and spdx_eval.spdx_known
+        ):
+            if "train_commercial" in purposes and not spdx_eval.commercial_train_ok:
+                errors.append(
+                    f"{prefix}.allowed_purposes includes 'train_commercial' but SPDX license "
+                    f"{entry['spdx_license']!r} (class={spdx_eval.license_class!r}) does not permit commercial training."
+                )
+            if "train_academic" in purposes and not spdx_eval.academic_train_ok:
+                errors.append(
+                    f"{prefix}.allowed_purposes includes 'train_academic' but SPDX license "
+                    f"{entry['spdx_license']!r} (class={spdx_eval.license_class!r}) does not permit academic training."
+                )
+
+        if (
+            entry["category"] in ("dataset", "chemistry_and_procurement")
+            and _is_bool(entry["commercial_use_ok"])
+            and entry["commercial_use_ok"] is True
+            and spdx_eval is not None
+            and spdx_eval.spdx_known
+            and spdx_eval.license_class in ("non_commercial", "custom_terms", "eval_only")
+        ):
+            errors.append(
+                f"{prefix}.commercial_use_ok cannot be true when SPDX license "
+                f"{entry['spdx_license']!r} resolves to {spdx_eval.license_class!r}."
+            )
 
         if entry["scraping_policy"] not in ALLOWED_SCRAPING_POLICIES:
             errors.append(f"{prefix}.scraping_policy invalid: {entry['scraping_policy']!r}")
@@ -501,7 +588,7 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
             if val is not None and not _is_nonempty_str(val, 1):
                 errors.append(f"{prefix}.{nullable_str} must be non-empty string or null.")
 
-        if not isinstance(entry["last_checked"], str) or not _DATE_RE.match(entry["last_checked"]):
+        if not _is_valid_iso_date(entry["last_checked"]):
             errors.append(f"{prefix}.last_checked invalid date: {entry['last_checked']!r}")
 
         # Policy invariant: held-out evaluation benchmarks across ALL categories must declare contamination_warning

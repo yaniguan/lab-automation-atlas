@@ -11,6 +11,7 @@ from .catalog import (
     build_compatibility_matrix,
     dump_catalog_yaml,
     filter_entries,
+    is_generic_or_bare_arxiv_license_evidence,
     load_catalog,
     load_catalog_cached,
     load_schema,
@@ -51,8 +52,14 @@ from .spdx import (
     parse_spdx_expression,
     spdx_satisfies_filter,
 )
+from .urlmatch import (
+    CROSS_REF_LINK_LABELS,
+    build_entry_url_prefixes,
+    canonicalize_url_for_match,
+    match_url_prefixes,
+)
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "__version__",
@@ -63,6 +70,7 @@ __all__ = [
     "ALLOWED_PURPOSES",
     "ALLOWED_SCRAPING_POLICIES",
     "ALLOWED_STATUSES",
+    "CROSS_REF_LINK_LABELS",
     "DEFAULT_USER_AGENT",
     "LICENSE_CLASSES_ORDERED",
     "PERMISSIVE_SPDX_ALLOWLIST",
@@ -75,6 +83,8 @@ __all__ = [
     "SpdxParseError",
     "audit_markdown_files",
     "build_compatibility_matrix",
+    "build_entry_url_prefixes",
+    "canonicalize_url_for_match",
     "check_atlas_resource_policy",
     "check_local_link",
     "check_readme_sync",
@@ -86,11 +96,13 @@ __all__ = [
     "extract_links",
     "extract_urls",
     "filter_entries",
+    "is_generic_or_bare_arxiv_license_evidence",
     "license_conj",
     "license_disj",
     "load_catalog",
     "load_catalog_cached",
     "load_schema",
+    "match_url_prefixes",
     "parse_spdx_expression",
     "render_catalog_markdown",
     "render_compatibility_markdown",

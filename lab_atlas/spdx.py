@@ -1,8 +1,11 @@
 """Stdlib SPDX 2.3/3.0 expression parser, bounded license lattice, and default-deny training policy.
 
-Implements a zero-dependency lexer and recursive-descent AST parser supporting compound SPDX
-expressions (`AND`, `OR`, `WITH`, `+`, and nested parentheses) aligned 1-to-1 with the formal
-5-element bounded distributive lattice in `lean/LabAtlasLean.lean`:
+Implements a zero-dependency lexer and recursive-descent AST parser (optionally cross-checked
+against `license-expression` when installed) supporting compound SPDX expressions (`AND`, `OR`,
+`WITH`, `+`, and nested parentheses). Note on Lean parity scope: SPDX string lexing/classification
+runs in Python, whereas the resulting 5-element bounded distributive lattice (`conj`, `disj`) and
+boolean resource policy (`check_atlas_resource_policy`) are verified against
+`lean/LabAtlasLean.lean` via 260 generated `#guard` assertions in `lean/LabAtlasLean/Parity.lean`:
 
     permissive (0) < share_alike (1) < non_commercial (2) < custom_terms (3) < eval_only (4)
 
@@ -17,7 +20,16 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Any, Sequence
+
+try:
+    from license_expression import ExpressionError as _LibExpressionError
+    from license_expression import Licensing as _LibLicensing
+
+    _STD_SPDX_LICENSING: Any = _LibLicensing()
+except ImportError:  # pragma: no cover - optional cross-validator when license-expression is absent
+    _LibExpressionError = None
+    _STD_SPDX_LICENSING = None
 
 LICENSE_CLASSES_ORDERED: tuple[str, ...] = (
     "permissive",
@@ -379,7 +391,15 @@ def parse_spdx_expression(
         allow_policy_aliases=allow_policy_aliases,
         require_uppercase_operators=require_uppercase_operators,
     )
-    return _Parser(tokens, expr).parse()
+    ast = _Parser(tokens, expr).parse()
+    if not allow_policy_aliases and _STD_SPDX_LICENSING is not None and _LibExpressionError is not None:
+        try:
+            _STD_SPDX_LICENSING.parse(expr, validate=False)
+        except _LibExpressionError as exc:
+            raise SpdxParseError(
+                f"Rejected by license_expression cross-validator for {expr!r}: {exc}"
+            ) from exc
+    return ast
 
 
 def _classify_leaf_id(identifier: str, *, allow_policy_aliases: bool) -> tuple[str, bool]:
