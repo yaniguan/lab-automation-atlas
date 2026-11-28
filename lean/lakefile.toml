@@ -4,3 +4,4 @@ defaultTargets = ["LabAtlasLean"]
 
 [[lean_lib]]
 name = "LabAtlasLean"
+roots = ["LabAtlasLean", "LabAtlasLean.Parity"]

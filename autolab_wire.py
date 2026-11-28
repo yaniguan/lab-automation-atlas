@@ -1,10 +1,11 @@
 """Auto-Lab 15-repository wire node (autolab-wire/v1) for lab-automation-atlas (Layer L5).
 
 Dynamically grounds target hardware platforms from `atlas.json` (cached by `(path, st_mtime_ns)`),
-enforces canonical HTTPS-only public-host SSRF safety (including non-canonical IPv4/IPv6 transition
-rejection and optional DNS-pinned IP validation), and evaluates compound SPDX license expressions
-(`AND`, `OR`, `WITH`) plus parent-lineage taint and catalog URL cross-matching under a strict
-default-deny training policy in 1-to-1 parity with `LabAtlasLean.checkAtlasResource`.
+enforces canonical HTTPS-only public-host SSRF safety, canonicalizes equivalent upstream URLs
+(`lab_atlas.urlmatch`), evaluates compound SPDX license expressions (`AND`, `OR`, `WITH`) plus
+parent-lineage taint (`lab_atlas.spdx`), and applies the boolean resource policy in parity with
+`LabAtlasLean.checkAtlasResource` (`lean/LabAtlasLean/Parity.lean`; URL canonicalization and SPDX
+string parsing run in Python, while the boolean policy and lattice operations are verified in Lean).
 """
 
 from __future__ import annotations
@@ -34,6 +35,12 @@ from lab_atlas.spdx import (  # noqa: E402
     effective_license_class,
     evaluate_spdx_expression,
     license_conj,
+)
+from lab_atlas.urlmatch import (  # noqa: E402
+    CROSS_REF_LINK_LABELS,
+    build_entry_url_prefixes,
+    canonicalize_url_for_match,
+    match_url_prefixes,
 )
 
 # Permissive training license allowlist re-exported for downstream wire inspection
@@ -95,7 +102,7 @@ _PLATFORM_HW_KEYWORDS: dict[str, tuple[str, ...]] = {
     "epics_beamline": ("epics beamlines",),
 }
 
-_CROSS_REF_LABELS: frozenset[str] = frozenset({"lab-rehearsal", "lab-verify", "Studio"})
+_CROSS_REF_LABELS: frozenset[str] = CROSS_REF_LINK_LABELS
 _VALID_PLATFORM_SLUG_RE = re.compile(r"^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$")
 
 
@@ -135,10 +142,7 @@ def _normalize_slug(raw: str) -> str:
 
 
 def _normalize_url_for_match(url: str) -> str:
-    parsed = urllib.parse.urlsplit(url.strip())
-    host = (parsed.hostname or "").strip().lower().rstrip(".")
-    path = parsed.path.rstrip("/")
-    return f"{parsed.scheme.lower()}://{host}{path}"
+    return canonicalize_url_for_match(url)
 
 
 def _build_indexed_atlas(catalog_path: Path) -> _IndexedAtlas:
@@ -210,30 +214,7 @@ def _build_indexed_atlas(catalog_path: Path) -> _IndexedAtlas:
         )
 
     # 2. Build canonical URL prefix index for catalog contamination / license cross-matching
-    url_prefixes: list[tuple[str, dict[str, Any]]] = []
-    for entry in entries:
-        candidates: list[str] = []
-        for link in entry["links"]:
-            if link["label"] in _CROSS_REF_LABELS:
-                continue
-            url_str = link["url"]
-            # Avoid matching generic vendor root pages across unrelated paths unless exact/subpath
-            candidates.append(_normalize_url_for_match(url_str))
-        if entry.get("huggingface_id"):
-            hf_id = entry["huggingface_id"]
-            candidates.append(_normalize_url_for_match(f"https://huggingface.co/datasets/{hf_id}"))
-            candidates.append(_normalize_url_for_match(f"https://huggingface.co/{hf_id}"))
-        if entry.get("doi"):
-            candidates.append(_normalize_url_for_match(f"https://doi.org/{entry['doi']}"))
-
-        seen_norm: set[str] = set()
-        for norm_u in candidates:
-            if norm_u and norm_u not in seen_norm:
-                seen_norm.add(norm_u)
-                url_prefixes.append((norm_u, entry))
-
-    # Sort longest prefix first so specific repository/dataset URLs match before broader domain roots
-    url_prefixes.sort(key=lambda item: len(item[0]), reverse=True)
+    url_prefixes = build_entry_url_prefixes(entries, cross_ref_labels=_CROSS_REF_LABELS)
 
     indexed = _IndexedAtlas(
         mtime_ns=mtime_ns,
@@ -246,16 +227,7 @@ def _build_indexed_atlas(catalog_path: Path) -> _IndexedAtlas:
 
 
 def _match_catalog_entries_by_url(url: str, indexed: _IndexedAtlas) -> list[dict[str, Any]]:
-    norm_target = _normalize_url_for_match(url)
-    matched: list[dict[str, Any]] = []
-    seen_ids: set[str] = set()
-    for prefix, entry in indexed.url_prefixes:
-        if norm_target == prefix or norm_target.startswith(prefix + "/"):
-            eid = entry["id"]
-            if eid not in seen_ids:
-                seen_ids.add(eid)
-                matched.append(entry)
-    return matched
+    return match_url_prefixes(url, indexed.url_prefixes)
 
 
 def _match_catalog_entry_by_url(url: str, indexed: _IndexedAtlas) -> dict[str, Any] | None:
@@ -368,20 +340,37 @@ def process_packet(
         pinned_ips=pinned_ips if resolve_dns else None,
     )
 
-    # 1. Evaluate caller-supplied SPDX expression strictly (fail-closed on non-string or blank)
-    raw_license = out.get("license_class", "MIT")
-    if isinstance(raw_license, str) and raw_license.strip():
-        license_expr = raw_license.strip()
-        own_eval = evaluate_spdx_expression(license_expr, allow_policy_aliases=True)
+    # 1. Cross-match canonicalized resource_url against verified atlas.json governance records
+    matched_entries = (
+        _match_catalog_entries_by_url(resource_url, indexed)
+        if isinstance(resource_url, str) and url_safe
+        else []
+    )
+
+    # 2. Evaluate caller-supplied SPDX expression strictly, or default-deny when omitted
+    if "license_class" in out:
+        raw_license = out["license_class"]
+        if isinstance(raw_license, str) and raw_license.strip():
+            license_expr = raw_license.strip()
+            own_eval = evaluate_spdx_expression(license_expr, allow_policy_aliases=True)
+            spdx_known = own_eval.spdx_known
+            eff_class = own_eval.license_class
+        else:
+            license_expr = repr(raw_license)
+            spdx_known = False
+            eff_class = "custom_terms"
+            malformed_fields.append("license_class")
+    elif matched_entries:
+        license_expr = str(matched_entries[0]["spdx_license"]).strip()
+        own_eval = evaluate_spdx_expression(license_expr, allow_policy_aliases=False)
         spdx_known = own_eval.spdx_known
         eff_class = own_eval.license_class
     else:
-        license_expr = repr(raw_license)
+        license_expr = "<missing>"
         spdx_known = False
         eff_class = "custom_terms"
-        malformed_fields.append("license_class")
 
-    # 2. Fold upstream parent licenses strictly if derived corpus lineage key is provided
+    # 3. Fold upstream parent licenses strictly if derived corpus lineage key is provided
     parent_classes: list[str] = []
     if "parent_licenses" in out:
         raw_parents = out["parent_licenses"]
@@ -407,12 +396,7 @@ def process_packet(
         spdx_known = False
         eff_class = license_conj(eff_class, "custom_terms")
 
-    # 3. Cross-match normalized resource_url against all matching verified atlas.json governance records
-    matched_entries = (
-        _match_catalog_entries_by_url(resource_url, indexed)
-        if isinstance(resource_url, str) and url_safe
-        else []
-    )
+    # 4. Conjoin all matched catalog governance postures (eval_only, rag_pointer_only, non-commercial)
     for matched_entry in matched_entries:
         cat_eval = evaluate_spdx_expression(matched_entry["spdx_license"], allow_policy_aliases=False)
         eff_class = license_conj(eff_class, cat_eval.license_class)
@@ -470,6 +454,7 @@ def process_packet(
             "analytical_modalities": list(platform_record.analytical_modalities),
             "effective_license_class": eff_class,
             "license_ok": license_and_url_ok,
+            "policy_violation": policy_violation,
             "registered_entries": len_entries,
         }
     else:
@@ -489,6 +474,7 @@ def process_packet(
             "analytical_modalities": [],
             "effective_license_class": eff_class,
             "license_ok": license_and_url_ok,
+            "policy_violation": policy_violation,
             "registered_entries": len_entries,
         }
 

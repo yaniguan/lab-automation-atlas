@@ -32,8 +32,8 @@ NEW_2026_DATASET_SPECS: dict[str, tuple[str, bool, bool, list[str]]] = {
         True,
         ["train_academic", "eval_only"],
     ),
-    "aqsoldb": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
-    "calisol-23": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "aqsoldb": ("CC0-1.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
+    "calisol-23": ("NOASSERTION", False, False, ["eval_only"]),
     "crystallography-open-database": (
         "CC0-1.0",
         False,
@@ -56,8 +56,8 @@ NEW_2026_DATASET_SPECS: dict[str, tuple[str, bool, bool, list[str]]] = {
     "opxrd": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
     "alab-gpss": ("CC-BY-4.0", False, True, ["train_commercial", "train_academic", "eval_only"]),
     "ehrsql-2024": ("CC-BY-4.0", False, True, ["eval_only"]),
-    "spider2": ("CC-BY-SA-4.0", False, True, ["eval_only"]),
-    "putnambench": ("MIT", True, True, ["eval_only"]),
+    "spider2": ("MIT", True, True, ["eval_only"]),
+    "putnambench": ("Apache-2.0 AND MIT", True, True, ["eval_only"]),
     "uci-gas-sensor-drift": (
         "CC-BY-4.0",
         False,
@@ -117,7 +117,6 @@ def test_open_datasets_2026_spdx_lattice_posture_alignment() -> None:
     for permissive_id in (
         "massspecgym",
         "aqsoldb",
-        "calisol-23",
         "crystallography-open-database",
         "omat24",
         "droid",
@@ -249,10 +248,9 @@ def test_autolab_wire_commercial_vs_academic_gating_for_2026_datasets() -> None:
     for permissive_url in (
         "https://huggingface.co/datasets/roman-bushuiev/MassSpecGym",
         "https://github.com/mcsorkun/AqSolDB",
-        "https://github.com/Pele0599/CALiSol-23",
         "https://www.crystallography.net/cod/",
         "https://huggingface.co/datasets/facebook/OMAT24",
-        "https://huggingface.co/datasets/cadene/droid",
+        "https://droid-dataset.github.io/",
     ):
         comm_ok = autolab_wire.process_packet(
             {
@@ -316,7 +314,6 @@ def test_open_datasets_2026_analytical_modalities_and_cli_queries(
         "alab-gpss",
         "uci-gas-sensor-drift",
         "layered-depth",
-        "calisol-23",
         "crystallography-open-database",
         "omat24",
         "droid",
@@ -325,6 +322,7 @@ def test_open_datasets_2026_analytical_modalities_and_cli_queries(
         "finebio",
         "chembench",
         "bixbench",
+        "calisol-23",
         "ehrsql-2024",
         "spider2",
         "putnambench",

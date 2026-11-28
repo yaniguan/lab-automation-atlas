@@ -44,7 +44,9 @@ jobs:
       - name: Install package and test dependencies
         run: python -m pip install --upgrade pip && pip install -e ".[dev]"
       - name: Verify catalog schema and README table sync
-        run: python scripts/sync_catalog.py --check
+        run: |
+          python scripts/sync_catalog.py --check
+          python scripts/gen_lean_parity.py --check
       - name: Run offline unit tests and offline link audit
         run: |
           pytest -q
@@ -68,3 +70,24 @@ jobs:
         with:
           name: link-status-report
           path: reports/link_status.json
+
+  license-audit:
+    if: github.event_name == 'schedule'
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify upstream Hugging Face, GitHub, and Zenodo licenses
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/check_licenses.py --json-out reports/license_status.json
+      - name: Upload license status JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-status-report
+          path: reports/license_status.json

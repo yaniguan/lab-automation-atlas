@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lab-automation-atlas"
-version = "0.2.0"
+version = "0.4.0"
 description = "Machine-readable semantic map, SPDX license registry, and link auditor for automated-lab hardware, protocol IRs, and open datasets."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -16,6 +16,7 @@ dependencies = []
 dev = [
     "pytest>=8.0",
     "jsonschema>=4.20",
+    "license-expression>=30.0",
 ]
 
 [project.scripts]

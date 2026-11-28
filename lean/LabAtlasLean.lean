@@ -470,14 +470,16 @@ def checkMcpCardSpec (c : McpCapabilityCard) : Option RegimeViolation :=
 structure McpToolCall where
   tokenEpoch          : Nat
   liveDeckEpoch       : Nat
-  volTenthUL          : Nat
-  srcWellVolTenthUL   : Nat
-  dstWellVolTenthUL   : Nat
-  dstWellCapTenthUL   : Nat
+  volTenthUL          : Int
+  srcWellVolTenthUL   : Int
+  dstWellVolTenthUL   : Int
+  dstWellCapTenthUL   : Int
   tempC               : TenthC
   plateSealed         : Bool
   hasUnknownExtraArgs : Bool
   commercialContext   : Bool
+  validJsonTypes      : Bool := true
+  forTraining         : Bool := false
   deriving DecidableEq, Repr
 
 /-- Executable precondition guard for every incoming MCP hardware tool invocation. -/
@@ -489,13 +491,16 @@ def checkMcpToolCall (c : McpCapabilityCard) (call : McpToolCall) : Option Regim
       [ (!call.hasUnknownExtraArgs,
           { rule := "no_unknown_mcp_arguments",
             detail := "MCP tool call contains undeclared hallucinated parameters" }),
+        (call.validJsonTypes,
+          { rule := "json_type_mismatch",
+            detail := "MCP tool call field fails numeric or boolean JSON schema type check" }),
         (decide (call.tokenEpoch == call.liveDeckEpoch),
           { rule := "fresh_deck_epoch",
             detail := "MCP call deck_epoch does not match live physical deck state" }),
-        (decide (c.minVolTenthUL ≤ call.volTenthUL ∧ call.volTenthUL ≤ c.maxVolTenthUL),
+        (decide ((c.minVolTenthUL : Int) ≤ call.volTenthUL ∧ call.volTenthUL ≤ (c.maxVolTenthUL : Int)),
           { rule := "volume_envelope_bounds",
             detail := "requested volume_ul falls outside hardware [min, max] pipette envelope" }),
-        (decide (c.deadVolTenthUL + call.volTenthUL ≤ call.srcWellVolTenthUL ∧
+        (decide ((c.deadVolTenthUL : Int) + call.volTenthUL ≤ call.srcWellVolTenthUL ∧
                  call.dstWellVolTenthUL + call.volTenthUL ≤ call.dstWellCapTenthUL),
           { rule := "dead_volume_and_capacity_guard",
             detail := "aspiration underflows dead-volume floor or dispense overflows destination well" }),
@@ -503,6 +508,12 @@ def checkMcpToolCall (c : McpCapabilityCard) (call : McpToolCall) : Option Regim
                  (call.tempC < c.sealTempThreshC ∨ call.plateSealed = true)),
           { rule := "thermal_and_evaporation_seal_guard",
             detail := "temperature outside envelope or >= seal threshold on an unsealed plate" }),
+        (decide (!call.forTraining ∨ c.licenseClass ≠ .evalOnly),
+          { rule := "eval_only_contamination_guard",
+            detail := "eval_only resource blocked from training pipeline" }),
+        (decide (!call.forTraining ∨ c.licenseClass.academicTrainOK = true),
+          { rule := "academic_training_license_guard",
+            detail := "custom_terms license class blocked from training pipelines" }),
         (decide (!call.commercialContext ∨ c.licenseClass.commercialTrainOK = true),
           { rule := "driver_commercial_license_guard",
             detail := "MCP hardware driver license does not permit commercial autonomous execution" }) ]
@@ -523,7 +534,7 @@ theorem untyped_or_epochless_card_rejected (c : McpCapabilityCard)
 /-- Out-of-envelope calls (stale epoch, dead-volume underflow, or unsealed high-temp) are intercepted. -/
 theorem out_of_envelope_mcp_call_intercepted (c : McpCapabilityCard) (call : McpToolCall)
     (hviol : call.tokenEpoch ≠ call.liveDeckEpoch ∨
-             call.srcWellVolTenthUL < c.deadVolTenthUL + call.volTenthUL ∨
+             call.srcWellVolTenthUL < (c.deadVolTenthUL : Int) + call.volTenthUL ∨
              (c.sealTempThreshC ≤ call.tempC ∧ call.plateSealed = false)) :
     checkMcpToolCall c call ≠ none := by
   intro hok
@@ -533,7 +544,7 @@ theorem out_of_envelope_mcp_call_intercepted (c : McpCapabilityCard) (call : Mcp
   | none =>
     simp only [hcard, firstViolation_cons, firstViolation_nil, and_true,
                decide_eq_true_eq, beq_iff_eq] at hok
-    rcases hok with ⟨_, hep, _, ⟨hdead, _⟩, ⟨_, _, hseal⟩, _⟩
+    rcases hok with ⟨_, _, hep, _, ⟨hdead, _⟩, ⟨_, _, hseal⟩, _, _, _⟩
     rcases hviol with he | hd | ⟨ht, hps⟩
     · exact he hep
     · omega

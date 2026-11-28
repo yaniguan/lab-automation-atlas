@@ -4,8 +4,10 @@ Inspired by di-omics/plr-mcp, K-Dense-AI/LabMCP, and Anthropic's Model Hardware 
 Compiles typed physical specifications (pipette [min, max] volume, dead-volume floor,
 signed cryogenic-to-reflux temperature limits, high-temperature evaporation seal coupling,
 mandatory deck_epoch, SSRF-hardened HTTPS endpoint, and compound SPDX license posture) into
-closed JSON-Schema MCP tool descriptors paired with executable precondition guards in 1-to-1
-parity with `lean/LabAtlasLean.lean`.
+closed JSON-Schema MCP tool descriptors paired with executable fixed-point precondition guards.
+Lean parity (`lean/LabAtlasLean.lean` and `lean/LabAtlasLean/Parity.lean`) covers the fixed-point
+card/call envelope checker and boolean license policy, while URL/SSRF and SPDX string parsing run
+in Python.
 """
 
 from __future__ import annotations
